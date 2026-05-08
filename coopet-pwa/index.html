@@ -620,7 +620,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 
     <div id="lightBtn" onclick="toggleLight()">💡</div>
     <div id="soundBtn" onclick="toggleSound()" title="サウンド ON/OFF">🔊</div>
-    <div class="furn-edit-btn" id="furnEditBtn" onclick="toggleFurnEdit()" title="模様替えモード">✏️</div>
+    <div class="furn-edit-btn" id="furnEditBtn" onclick="toggleFurnEdit()" title="📌配置→✋移動→🔒OFF">✏️</div>
     <div id="furnEditBanner">✏️ 模様替えモード中</div>
     <div id="darkOverlay"></div>
     <!-- RATTLE OVERLAY (inside room div) -->
@@ -898,7 +898,7 @@ const BAD={fat:{id:'fat',icon:'🍔',name:'肥満',cls:'bb-fat',desc:'ごはん�
 
 // ══ STATE ══
 let selPet='dragon', selTheme='kids_room', petName='';
-let G={hunger:70,happy:80,energy:60,xp:35,stageIdx:0,pts:185,styleA:0,styleB:0,styleC:0,styleD:0,physical:50,clean:80,lightOn:true,sleepState:'awake',poops:[],lastPoopTime:Date.now(),nextPoopInterval:1800000,lullabyTimes:[],badStatus:new Set(),recentFeeds:[],recentTouches:[],lowEnergyStart:null,lastInteracted:Date.now(),battleBoost:false,furnEditMode:false,rattleMode:false,rattleStrokes:0,petTapCooldown:0};
+let G={hunger:70,happy:80,energy:60,xp:35,stageIdx:0,pts:185,styleA:0,styleB:0,styleC:0,styleD:0,physical:50,clean:80,lightOn:true,sleepState:'awake',poops:[],lastPoopTime:Date.now(),nextPoopInterval:1800000,lullabyTimes:[],badStatus:new Set(),recentFeeds:[],recentTouches:[],lowEnergyStart:null,lastInteracted:Date.now(),battleBoost:false,furnEditMode:false,furnMoveMode:false,rattleMode:false,rattleStrokes:0,petTapCooldown:0};
 let interactMode='stroke',strokePoints=[],strokeActive=false,strokeCombo=0,mouseDown=false,emoTimer=null;
 let petX=50,petTargetX=50,petDir=1,petBeh='idle',petTimer=0,drag={active:false};
 let evoUnlocked={A:false,B:false,C:false,D:false};
@@ -1068,24 +1068,43 @@ function applyTheme(){
   document.querySelectorAll('.rt-card').forEach(c=>c.classList.toggle('selected',c.dataset.themeId===th.id));
 }
 
-// ══ ROOM EDIT OVERLAY ══
+// ══ ROOM EDIT OVERLAY（配置モード） ══
 function openRoomEdit(){
-  document.getElementById('roomEditOverlay').classList.add('open');
-  // 家具タブを開いた場合は自動で編集モード ON
+  // 移動モードが ON なら先に解除
+  if(G.furnMoveMode) exitMoveMode();
   G.furnEditMode=true;
+  document.getElementById('roomEditOverlay').classList.add('open');
   document.getElementById('furnEditBtn').classList.add('on');
+  document.getElementById('furnEditBanner').textContent='📌 配置モード：カタログから家具をドラッグ';
   document.getElementById('furnEditBanner').classList.add('show');
-  placedFurniture.forEach(f=>{f.el.classList.remove('locked');});
+  // 配置モード中は既存家具をロック
+  placedFurniture.forEach(f=>{f.el.classList.add('locked');});
 }
 function closeRoomEdit(){
+  G.furnEditMode=false;
   document.getElementById('roomEditOverlay').classList.remove('open');
-  // 模様替えモードも同時に解除
-  if(G.furnEditMode){
-    G.furnEditMode=false;
-    document.getElementById('furnEditBtn').classList.remove('on');
-    document.getElementById('furnEditBanner').classList.remove('show');
-    placedFurniture.forEach(f=>{f.el.classList.add('locked');});
-  }
+  document.getElementById('furnEditBtn').classList.remove('on');
+  document.getElementById('furnEditBanner').classList.remove('show');
+  placedFurniture.forEach(f=>{f.el.classList.add('locked');});
+}
+// ── 移動モード ──
+function enterMoveMode(){
+  // 配置モードが ON なら先に閉じる
+  if(G.furnEditMode) closeRoomEdit();
+  G.furnMoveMode=true;
+  document.getElementById('furnEditBtn').classList.add('on');
+  document.getElementById('furnEditBanner').textContent='✋ 移動モード：家具をドラッグして移動・＋－でサイズ変更';
+  document.getElementById('furnEditBanner').classList.add('show');
+  placedFurniture.forEach(f=>{f.el.classList.remove('locked');});
+  showToast('✋ 移動モード ON — タップで選択・ドラッグで移動');
+}
+function exitMoveMode(){
+  G.furnMoveMode=false;
+  document.getElementById('furnEditBtn').classList.remove('on');
+  document.getElementById('furnEditBanner').classList.remove('show');
+  placedFurniture.forEach(f=>{f.el.classList.add('locked');});
+  deselectAll();
+  showToast('🔒 移動モード OFF');
 }
 function reTab(id,btn){document.querySelectorAll('.re-tab').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.re-pane').forEach(p=>p.classList.remove('active'));btn.classList.add('active');document.getElementById('re-'+id).classList.add('active');}
 
@@ -1163,7 +1182,7 @@ function placeFurnitureAt(img,xPct,yPct,sz){
   const scaleDown=document.createElement('div');scaleDown.className='f-scale f-scale-dn';scaleDown.textContent='－';
   scaleDown.addEventListener('click',e=>{e.stopPropagation();resizeFurniture(id,0.8);});
   el.appendChild(scaleDown);
-  el.addEventListener('click',e=>{e.stopPropagation();if(G.furnEditMode)selectFurniture(id);});
+  el.addEventListener('click',e=>{e.stopPropagation();if(G.furnMoveMode)selectFurniture(id);});
   makeFurnitureDraggable(el);
   if(!G.furnEditMode)el.classList.add('locked');
   room.appendChild(el);
@@ -1197,19 +1216,20 @@ function removeFurniture(id){
 }
 
 function toggleFurnEdit(){
-  G.furnEditMode=!G.furnEditMode;
-  document.getElementById('furnEditBtn').classList.toggle('on',G.furnEditMode);
-  document.getElementById('furnEditBanner').classList.toggle('show',G.furnEditMode);
-  placedFurniture.forEach(f=>{f.el.classList.toggle('locked',!G.furnEditMode);});
-  if(G.furnEditMode){
-    // 家具タブを選択した状態でパネルを開く
+  if(!G.furnEditMode&&!G.furnMoveMode){
+    // OFF → 配置モード
     openRoomEdit();
     const furnTab=document.querySelector('.re-tab:nth-child(2)');
     if(furnTab) reTab('furn',furnTab);
-  } else {
+    showToast('📌 配置モード ON');
+  } else if(G.furnEditMode&&!G.furnMoveMode){
+    // 配置モード → 移動モード
     closeRoomEdit();
+    enterMoveMode();
+  } else {
+    // 移動モード → OFF
+    exitMoveMode();
   }
-  showToast(G.furnEditMode?'✏️ 模様替えモード ON':'🔒 模様替えモード OFF');
 }
 function makeFurnitureDraggable(el){
   let fIsDragging=false,fPinching=false,fInitDist=0,fInitScale=1;
@@ -1237,7 +1257,7 @@ function makeFurnitureDraggable(el){
   };
   el.addEventListener('touchstart',e=>{
     e.stopPropagation();if(e.target.classList.contains('f-del'))return;
-    if(!G.furnEditMode){return;} // only draggable in edit mode
+    if(!G.furnMoveMode){return;} // only draggable in move mode
     e.preventDefault();
     selectFurniture(el.id);
     if(e.touches.length>=2){
@@ -1249,7 +1269,7 @@ function makeFurnitureDraggable(el){
   },{passive:false});
   el.addEventListener('mousedown',e=>{
     e.stopPropagation();if(e.target.classList.contains('f-del'))return;
-    if(!G.furnEditMode){return;} // only draggable in edit mode
+    if(!G.furnMoveMode){return;} // only draggable in move mode
     selectFurniture(el.id);fIsDragging=true;el.style.opacity='.8';el.style.zIndex='200';
     document.addEventListener('mousemove',fOnMove);document.addEventListener('mouseup',fOnUp);
   });
@@ -1413,7 +1433,7 @@ function loadAndContinue(){
   Object.assign(G,d.G);G.badStatus=new Set(d.G.badStatus||[]);
   G.poops=[];G.lullabyTimes=[];G.recentFeeds=[];G.recentTouches=[];
   G.lowEnergyStart=null;G.lastInteracted=Date.now();G.lastPoopTime=Date.now();
-  G.nextPoopInterval=900000+Math.random()*2700000;G.furnEditMode=false;G.rattleMode=false;G.rattleStrokes=0;G.petTapCooldown=0;G.battleBoost=false;
+  G.nextPoopInterval=900000+Math.random()*2700000;G.furnEditMode=false;G.furnMoveMode=false;G.rattleMode=false;G.rattleStrokes=0;G.petTapCooldown=0;G.battleBoost=false;
   if(d.evo)Object.assign(evoUnlocked,d.evo);
   document.getElementById('s-setup').classList.remove('active');
   document.getElementById('s-game').classList.add('active');
@@ -1500,20 +1520,30 @@ function onFed(foodObj,cx,cy){
 }
 
 // ══ STROKE/POKE ══
+// インタラクティブ要素のセレクタ（タッチを奪わない）
+const INTERACTIVE_SEL='button,[onclick],.act-btn,.edit-room-btn,.furn-edit-btn,#soundBtn,#lightBtn,#shareBtn,#memberBadge,.food-item,.furniture-item,.furn-item,.fp-item,.pp-item,.tp-item,.re-tab,.re-done,input,select,a';
 function initStroke(){
   const r=document.getElementById('room');
-  const blocked=()=>drag.active||furnDrag.active||document.getElementById('roomEditOverlay').classList.contains('open')||G.furnEditMode;
+  const blocked=()=>drag.active||furnDrag.active
+    ||document.getElementById('roomEditOverlay').classList.contains('open')
+    ||G.furnEditMode||G.furnMoveMode;
   r.addEventListener('touchstart',e=>{
+    // ボタン類はここで preventDefault しない（クリックイベントを生かす）
+    if(e.target.closest(INTERACTIVE_SEL))return;
     if(blocked())return;
     e.preventDefault();
     const t=e.touches[0];bs(t.clientX,t.clientY);
   },{passive:false});
   r.addEventListener('touchmove',e=>{
+    if(e.target.closest(INTERACTIVE_SEL))return;
     if(blocked())return;
     e.preventDefault();const t=e.touches[0];ms(t.clientX,t.clientY);
   },{passive:false});
-  r.addEventListener('touchend',e=>{if(blocked())return;es();},{passive:false});
-  // mouse: only drag (mousemove), no hover reactions
+  r.addEventListener('touchend',e=>{
+    if(e.target.closest(INTERACTIVE_SEL))return;
+    if(blocked())return;
+    es();
+  },{passive:false});
   r.addEventListener('mousedown',e=>{if(blocked())return;mouseDown=true;bs(e.clientX,e.clientY);});
   r.addEventListener('mousemove',e=>{if(!mouseDown||blocked())return;ms(e.clientX,e.clientY);});
   r.addEventListener('mouseup',e=>{if(blocked())return;mouseDown=false;es();});

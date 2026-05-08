@@ -149,8 +149,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 /* Pet */
 #petWrap{position:absolute;bottom:28px;z-index:10;touch-action:none;cursor:pointer;}
 #petSvg{overflow:visible;display:block;}
-.emobub{position:absolute;top:-36px;left:50%;transform:translateX(-50%);background:rgba(10,15,28,.94);border:1px solid var(--border);border-radius:99px;padding:4px 10px;font-size:.62rem;white-space:nowrap;opacity:0;transition:opacity .25s;pointer-events:none;z-index:20;}
-.emobub.show{opacity:1;}
+.emobub{position:absolute;top:-44px;left:50%;transform:translateX(-50%) scale(0.6);background:none;border:none;border-radius:50%;padding:0;font-size:1.7rem;line-height:1;white-space:nowrap;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:20;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));}
+.emobub.show{opacity:1;transform:translateX(-50%) scale(1);}
 .bad-aura{position:absolute;inset:-10px;border-radius:50%;pointer-events:none;opacity:0;transition:opacity .5s;animation:auraP 2s ease-in-out infinite;}
 .bad-aura.show{opacity:1;}
 @keyframes auraP{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
@@ -866,19 +866,19 @@ const FURNITURE=[
 const PETS={
   dragon:{eggName:'🔴 炎の卵',eggDesc:'ドラゴン系 — 力強くたくましい',traits:['たくましい','元気いっぱい','火属性'],glow:'rgba(251,113,133,.5)',
     stages:[{name:'たまご期',xp:80,renderer:(d,s,b)=>PetSVG.egg(b),sz:80},{name:'ひな竜',xp:150,renderer:(d,s,b)=>PetSVG.hina(d,s,b),sz:100},{name:'ワイバーン',xp:250,renderer:(d,s,b)=>PetSVG.wyvern(d,s,b),sz:110}],
-    finals:{A:{name:'ぽっちゃり竜',route:'食いしん坊',bg:'rgba(251,191,36,.35)',renderer:(d,s,b)=>PetSVG.hina(d,s,b),sz:115},B:{name:'古代竜',route:'バランス',bg:'rgba(45,212,191,.35)',renderer:(d,s,b)=>PetSVG.wyvern(d,s,b),sz:115},C:{name:'星竜',route:'あそび',bg:'rgba(192,132,252,.35)',renderer:(d,s,b)=>PetSVG.wyvern(d,s,b),sz:115},D:{name:'筋肉竜',route:'トレーニング',bg:'rgba(248,113,113,.35)',renderer:(d,s,b)=>PetSVG.wyvern(d,s,b),sz:120,bodyType:'muscular'}}},
+    finals:{A:{name:'ぽっちゃり竜',route:'食いしん坊',bg:'rgba(251,191,36,.35)',renderer:(d,s,b)=>PetSVG.wyvern(d,s,b),sz:120,bodyType:'chubby',isFinal:true},B:{name:'古代竜',route:'バランス',bg:'rgba(45,212,191,.35)',renderer:(d,s,b)=>PetSVG.wyvern(d,s,b),sz:118,bodyType:'balanced',isFinal:true},C:{name:'星竜',route:'あそび',bg:'rgba(192,132,252,.35)',renderer:(d,s,b)=>PetSVG.wyvern(d,s,b),sz:118,bodyType:'cute',isFinal:true},D:{name:'筋肉竜',route:'トレーニング',bg:'rgba(248,113,113,.35)',renderer:(d,s,b)=>PetSVG.wyvern(d,s,b),sz:122,bodyType:'muscular',isFinal:true}}},
   unicorn:{eggName:'🟣 虹色の卵',eggDesc:'ユニコーン系 — やさしく癒し系',traits:['やさしい','癒し系','魔法属性'],glow:'rgba(192,132,252,.55)',
     stages:[{name:'たまご期',xp:80,renderer:(d,s,b)=>PetSVG.egg(b),sz:80},{name:'こうまごろも',xp:150,renderer:(d,s,b)=>PetSVG.foal(d,s,b),sz:105},{name:'虹馬',xp:250,renderer:(d,s,b)=>PetSVG.rainbow(d,s,b),sz:115}],
-    finals:{A:{name:'ぽっちゃり馬',route:'食いしん坊',bg:'rgba(251,191,36,.35)',renderer:(d,s,b)=>PetSVG.foal(d,s,b),sz:115},B:{name:'天馬',route:'バランス',bg:'rgba(45,212,191,.35)',renderer:(d,s,b)=>PetSVG.rainbow(d,s,b),sz:115},C:{name:'ゆめ馬',route:'あそび',bg:'rgba(192,132,252,.35)',renderer:(d,s,b)=>PetSVG.rainbow(d,s,b),sz:115},D:{name:'武装馬',route:'トレーニング',bg:'rgba(248,113,113,.35)',renderer:(d,s,b)=>PetSVG.rainbow(d,s,b),sz:120,bodyType:'muscular'}}},
+    finals:{A:{name:'ぽっちゃり馬',route:'食いしん坊',bg:'rgba(251,191,36,.35)',renderer:(d,s,b)=>PetSVG.rainbow(d,s,b),sz:120,bodyType:'chubby',isFinal:true},B:{name:'天馬',route:'バランス',bg:'rgba(45,212,191,.35)',renderer:(d,s,b)=>PetSVG.rainbow(d,s,b),sz:118,bodyType:'balanced',isFinal:true},C:{name:'ゆめ馬',route:'あそび',bg:'rgba(192,132,252,.35)',renderer:(d,s,b)=>PetSVG.rainbow(d,s,b),sz:118,bodyType:'cute',isFinal:true},D:{name:'武装馬',route:'トレーニング',bg:'rgba(248,113,113,.35)',renderer:(d,s,b)=>PetSVG.rainbow(d,s,b),sz:122,bodyType:'muscular',isFinal:true}}},
   slime:{eggName:'🟢 ぷよぷよ卵',eggDesc:'スライム系 — 不思議でユニーク',traits:['不思議','ユニーク','変身属性'],glow:'rgba(45,212,191,.55)',
     stages:[{name:'たまご期',xp:80,renderer:(d,s,b)=>PetSVG.egg(b),sz:80},{name:'プチスライム',xp:150,renderer:(d,s,b)=>PetSVG.slime2(d,s,b),sz:100},{name:'スライムン',xp:250,renderer:(d,s,b)=>PetSVG.slimun(d,s,b),sz:115}],
-    finals:{A:{name:'プリンスライム',route:'食いしん坊',bg:'rgba(251,191,36,.35)',renderer:(d,s,b)=>PetSVG.slime2(d,s,b),sz:115},B:{name:'クリスタル',route:'バランス',bg:'rgba(45,212,191,.35)',renderer:(d,s,b)=>PetSVG.slimun(d,s,b),sz:115},C:{name:'カオス',route:'あそび',bg:'rgba(192,132,252,.35)',renderer:(d,s,b)=>PetSVG.slimun(d,s,b),sz:115},D:{name:'マッスルスライム',route:'トレーニング',bg:'rgba(248,113,113,.35)',renderer:(d,s,b)=>PetSVG.slimun(d,s,b),sz:120,bodyType:'muscular'}}},
+    finals:{A:{name:'プリンスライム',route:'食いしん坊',bg:'rgba(251,191,36,.35)',renderer:(d,s,b)=>PetSVG.slimun(d,s,b),sz:120,bodyType:'chubby',isFinal:true},B:{name:'クリスタル',route:'バランス',bg:'rgba(45,212,191,.35)',renderer:(d,s,b)=>PetSVG.slimun(d,s,b),sz:118,bodyType:'balanced',isFinal:true},C:{name:'カオス',route:'あそび',bg:'rgba(192,132,252,.35)',renderer:(d,s,b)=>PetSVG.slimun(d,s,b),sz:118,bodyType:'cute',isFinal:true},D:{name:'マッスルスライム',route:'トレーニング',bg:'rgba(248,113,113,.35)',renderer:(d,s,b)=>PetSVG.slimun(d,s,b),sz:122,bodyType:'muscular',isFinal:true}}},
   fox:{eggName:'🟠 橙の卵',eggDesc:'きつね系 — すばしっこくて賢い',traits:['賢い','すばしっこい','風属性'],glow:'rgba(232,128,64,.55)',
     stages:[{name:'たまご期',xp:80,renderer:(d,s,b)=>PetSVG.egg(b),sz:80},{name:'子ぎつね',xp:150,renderer:(d,s,b)=>PetSVG.foxkit(d,s,b),sz:100},{name:'きつね',xp:250,renderer:(d,s,b)=>PetSVG.fox(d,s,b),sz:110}],
-    finals:{A:{name:'ぽっちゃりぎつね',route:'食いしん坊',bg:'rgba(251,191,36,.35)',renderer:(d,s,b)=>PetSVG.foxkit(d,s,b),sz:115},B:{name:'九尾きつね',route:'バランス',bg:'rgba(45,212,191,.35)',renderer:(d,s,b)=>PetSVG.fox(d,s,b),sz:115},C:{name:'ゆめぎつね',route:'あそび',bg:'rgba(192,132,252,.35)',renderer:(d,s,b)=>PetSVG.fox(d,s,b),sz:115},D:{name:'武神きつね',route:'トレーニング',bg:'rgba(248,113,113,.35)',renderer:(d,s,b)=>PetSVG.fox(d,s,b),sz:120,bodyType:'muscular'}}},
+    finals:{A:{name:'ぽっちゃりぎつね',route:'食いしん坊',bg:'rgba(251,191,36,.35)',renderer:(d,s,b)=>PetSVG.fox(d,s,b),sz:120,bodyType:'chubby',isFinal:true},B:{name:'九尾きつね',route:'バランス',bg:'rgba(45,212,191,.35)',renderer:(d,s,b)=>PetSVG.fox(d,s,b),sz:118,bodyType:'balanced',isFinal:true},C:{name:'ゆめぎつね',route:'あそび',bg:'rgba(192,132,252,.35)',renderer:(d,s,b)=>PetSVG.fox(d,s,b),sz:118,bodyType:'cute',isFinal:true},D:{name:'武神きつね',route:'トレーニング',bg:'rgba(248,113,113,.35)',renderer:(d,s,b)=>PetSVG.fox(d,s,b),sz:122,bodyType:'muscular',isFinal:true}}},
   phoenix:{eggName:'🔥 炎の大卵',eggDesc:'フェニックス系 — 炎をまとう伝説の鳥',traits:['勇敢','たくましい','炎/再生属性'],glow:'rgba(224,48,32,.6)',
     stages:[{name:'たまご期',xp:80,renderer:(d,s,b)=>PetSVG.egg(b),sz:80},{name:'ほのおのひな',xp:150,renderer:(d,s,b)=>PetSVG.firechick(d,s,b),sz:100},{name:'若フェニックス',xp:250,renderer:(d,s,b)=>PetSVG.phoenix(d,s,b),sz:115}],
-    finals:{A:{name:'ぽっちゃり鳥',route:'食いしん坊',bg:'rgba(251,191,36,.35)',renderer:(d,s,b)=>PetSVG.firechick(d,s,b),sz:115},B:{name:'聖鳥フェニックス',route:'バランス',bg:'rgba(45,212,191,.35)',renderer:(d,s,b)=>PetSVG.phoenix(d,s,b),sz:115},C:{name:'虹色フェニックス',route:'あそび',bg:'rgba(192,132,252,.35)',renderer:(d,s,b)=>PetSVG.phoenix(d,s,b),sz:115},D:{name:'炎神フェニックス',route:'トレーニング',bg:'rgba(248,113,113,.35)',renderer:(d,s,b)=>PetSVG.phoenix(d,s,b),sz:120,bodyType:'muscular'}}},
+    finals:{A:{name:'ぽっちゃり鳥',route:'食いしん坊',bg:'rgba(251,191,36,.35)',renderer:(d,s,b)=>PetSVG.phoenix(d,s,b),sz:120,bodyType:'chubby',isFinal:true},B:{name:'聖鳥フェニックス',route:'バランス',bg:'rgba(45,212,191,.35)',renderer:(d,s,b)=>PetSVG.phoenix(d,s,b),sz:118,bodyType:'balanced',isFinal:true},C:{name:'虹色フェニックス',route:'あそび',bg:'rgba(192,132,252,.35)',renderer:(d,s,b)=>PetSVG.phoenix(d,s,b),sz:118,bodyType:'cute',isFinal:true},D:{name:'炎神フェニックス',route:'トレーニング',bg:'rgba(248,113,113,.35)',renderer:(d,s,b)=>PetSVG.phoenix(d,s,b),sz:122,bodyType:'muscular',isFinal:true}}},
 };
 
 const BAD={fat:{id:'fat',icon:'🍔',name:'肥満',cls:'bb-fat',desc:'ごはん与えすぎ',eff:'最大HP-20%',color:'rgba(180,120,30,.28)'},digest:{id:'digest',icon:'🤢',name:'消化不良',cls:'bb-digest',desc:'短時間に食べすぎ',eff:'げんき毎tick-2',color:'rgba(200,50,50,.24)'},tired:{id:'tired',icon:'😴',name:'だるい',cls:'bb-tired',desc:'構いすぎで休めない',eff:'XP取得50%減',color:'rgba(100,100,150,.24)'},nervous:{id:'nervous',icon:'😤',name:'神経質',cls:'bb-nervous',desc:'タッチが多すぎる',eff:'タッチ反応が過敏',color:'rgba(150,80,200,.24)'},sleepy:{id:'sleepy',icon:'💤',name:'睡眠不足',cls:'bb-sleepy',desc:'げんきが長時間低い',eff:'げんき上限-15%',color:'rgba(80,80,200,.24)'},lonely:{id:'lonely',icon:'😢',name:'さみしい',cls:'bb-lonely',desc:'放置が続いている',eff:'きもち毎tick-3',color:'rgba(200,60,100,.24)'},injured:{id:'injured',icon:'🩹',name:'けが',cls:'bb-injured',desc:'バトルでけがをした',eff:'全ステータス毎tick-2',color:'rgba(248,113,113,.24)'}};
@@ -1187,7 +1187,33 @@ function makeFurnitureDraggable(el){
 //  PET AI
 // ══════════════════════════════════════════════════════════
 function getCurRenderer(){const pet=PETS[selPet];const isFin=G.stageIdx>=pet.stages.length;if(isFin){const r=getRoute();return pet.finals[r];}return pet.stages[G.stageIdx];}
-function drawPet(svgEl,rd,dir,state,bad){const h=rd.sz||100,half=h/2;svgEl.setAttribute('viewBox',`${-half} ${-half} ${h} ${h}`);svgEl.style.width=h+'px';svgEl.style.height=h+'px';svgEl.innerHTML=rd.renderer(dir,state,bad);const wrap=svgEl.parentElement;if(wrap){wrap.dataset.bodytype=rd.bodyType||'';const bt=rd.bodyType||'';if(bt==='muscular'){svgEl.style.filter='saturate(1.5) brightness(1.1)';svgEl.style.transform='scaleX(1.22) scaleY(0.88)';}else if(bt==='chubby'){svgEl.style.filter='saturate(1.2)';svgEl.style.transform='scaleX(1.35) scaleY(1.15)';}else if(bt==='cute'){svgEl.style.filter='';svgEl.style.transform='scale(1.12)';}else{svgEl.style.filter='';svgEl.style.transform='';}}}
+function drawPet(svgEl,rd,dir,state,bad){
+  const h=rd.sz||100,half=h/2;
+  svgEl.setAttribute('viewBox',`${-half} ${-half} ${h} ${h}`);
+  svgEl.style.width=h+'px';svgEl.style.height=h+'px';
+  let inner=rd.renderer(dir,state,bad);
+  // 最終進化オーバーレイ
+  if(rd.isFinal){
+    const bt=rd.bodyType||'';const t=half-8;
+    if(bt==='chubby')inner+=`<path d="M-11,${-t} L-6,${-t+10} L0,${-t+4} L6,${-t+10} L11,${-t} L8,${-t} L9,${-t+7} L0,${-t+5} L-9,${-t+7} L-8,${-t} Z" fill="#fbbf24" stroke="#f59e0b" stroke-width=".8" opacity=".95"/><circle cx="0" cy="${-t+2}" r="2.5" fill="#fde68a" opacity=".9"/>`;
+    else if(bt==='balanced')inner+=`<circle cx="0" cy="${-t+4}" r="5" fill="none" stroke="#2dd4bf" stroke-width="2" opacity=".9"/><circle cx="-14" cy="${-t+12}" r="3" fill="#2dd4bf" opacity=".7"/><circle cx="14" cy="${-t+12}" r="3" fill="#2dd4bf" opacity=".7"/><circle cx="-8" cy="${-t+6}" r="2" fill="#5eead4" opacity=".8"/><circle cx="8" cy="${-t+6}" r="2" fill="#5eead4" opacity=".8"/>`;
+    else if(bt==='cute')inner+=`<circle cx="-16" cy="${-t+8}" r="4" fill="#f472b6" opacity=".8"/><circle cx="16" cy="${-t+8}" r="4" fill="#f472b6" opacity=".8"/><path d="M-4,${-t+4} Q0,${-t} 4,${-t+4} Q0,${-t+8} -4,${-t+4}Z" fill="#f9a8d4" opacity=".9"/>`;
+    else if(bt==='muscular')inner+=`<path d="M-16,${t-4} Q-10,${t-14} -4,${t-4} Q2,${t-14} 8,${t-4} Q14,${t-14} 20,${t-4}" fill="none" stroke="#f87171" stroke-width="3.5" opacity=".85"/><path d="M-20,${t-2} Q-14,${t-10} -8,${t-2} Q-2,${t-10} 4,${t-2}" fill="none" stroke="#fca5a5" stroke-width="2" opacity=".7"/>`;
+  }
+  svgEl.innerHTML=inner;
+  const wrap=svgEl.parentElement;
+  if(wrap){
+    wrap.dataset.bodytype=rd.bodyType||'';
+    const bt=rd.bodyType||'';
+    if(bt==='muscular'){svgEl.style.filter='saturate(1.6) brightness(1.15)';svgEl.style.transform='scaleX(1.25) scaleY(0.85)';}
+    else if(bt==='chubby'){svgEl.style.filter='saturate(1.3) brightness(1.05)';svgEl.style.transform='scaleX(1.38) scaleY(1.18)';}
+    else if(bt==='cute'){svgEl.style.filter='hue-rotate(15deg) saturate(1.4) brightness(1.1)';svgEl.style.transform='scale(1.13)';}
+    else if(bt==='balanced'){svgEl.style.filter='brightness(1.2) saturate(1.15)';svgEl.style.transform='scale(1.1)';}
+    else{svgEl.style.filter='';svgEl.style.transform='';}
+    // 最終進化グロー
+    if(rd.isFinal){const gc={chubby:'#fbbf24',balanced:'#2dd4bf',cute:'#f472b6',muscular:'#f87171'}[bt]||'#2dd4bf';svgEl.style.filter+=' drop-shadow(0 0 10px '+gc+'aa)';}
+  }
+}
 function startPetAI(){pickBeh();(function loop(){petUpdate();requestAnimationFrame(loop);})();}
 function pickBeh(){
   const r=Math.random(),hb=G.badStatus.size>0;
@@ -1221,9 +1247,30 @@ function petUpdate(){
   const dz=document.getElementById('dropZone');dz.style.left=(wr.left+wr.width/2-rr.left)+'px';dz.style.top=(wr.top+wr.height/2-rr.top)+'px';
 }
 function doBounce(){const s=document.getElementById('petSvg');s.style.transform='scale(1.25,0.78)';setTimeout(()=>s.style.transform='scale(0.88,1.12)',90);setTimeout(()=>s.style.transform='',200);}
-const EMO_OK=['❤️ だいすき！','✨ うれしい！','🎵 ハミング♪','😊 きもちいい'];
-const EMO_BAD=['🍖 はらぺこ…','😢 かまって…','💤 ねむい…'];
-function showEmo(msg){const b=document.getElementById('emoBub');if(!msg){const bd=[G.hunger<28?EMO_BAD[0]:null,G.happy<28?EMO_BAD[1]:null,G.energy<18?EMO_BAD[2]:null].filter(Boolean);const p=bd.length?bd:EMO_OK;msg=p[Math.floor(Math.random()*p.length)];}b.textContent=msg;b.classList.add('show');clearTimeout(emoTimer);emoTimer=setTimeout(()=>b.classList.remove('show'),2400);}
+const EMO_OK=['❤️','✨','🎵','😊','🥰','💕','⭐'];
+const EMO_BAD=['🍖','😢','💤'];
+const EMO_MAP={
+  happy:'❤️', feed:'😋', play:'🎉', stroke:'💕', poke:'❗',
+  angry:'💢', sleep:'💤', wake:'☀️', evo:'🌟', clean:'✨',
+  fight:'⚔️', exercise:'💪', heal:'💊', sad:'😢', nervous:'😤'
+};
+function showEmo(key){
+  const b=document.getElementById('emoBub');
+  let icon;
+  if(!key){
+    const bd=[G.hunger<28?EMO_BAD[0]:null,G.happy<28?EMO_BAD[1]:null,G.energy<18?EMO_BAD[2]:null].filter(Boolean);
+    const p=bd.length?bd:EMO_OK;
+    icon=p[Math.floor(Math.random()*p.length)];
+  } else if(EMO_MAP[key]){
+    icon=EMO_MAP[key];
+  } else {
+    icon=key; // allow passing raw emoji directly
+  }
+  b.textContent=icon;
+  b.classList.add('show');
+  clearTimeout(emoTimer);
+  emoTimer=setTimeout(()=>b.classList.remove('show'),1800);
+}
 
 // ══ BAD STATUS ══
 function addBad(id){if(G.badStatus.has(id))return;G.badStatus.add(id);renderBad();showBadPopup([id]);showToastBad(`⚠️ ${BAD[id].name} が発生！`);}
@@ -1365,7 +1412,7 @@ function onFed(foodObj,cx,cy){
   spawnP([foodObj.emoji,'💛','✨'],cx,cy);
   spawnDmg(`+${hg}おなか`,'var(--amber)',cx,cy-28);
   if(hp>0)spawnDmg(`+${hp}きもち`,'var(--rose)',cx,cy-50);
-  showEmo('😋 おいしい！');renderAll();checkEvo();
+  showEmo('feed');renderAll();checkEvo();
   showToast(`${foodObj.emoji} ${foodObj.name}を渡した！${G.hunger>85?' ⚠️おなかいっぱい注意':''}`);
   syncState();
 }
@@ -1411,14 +1458,14 @@ function es(){
     checkTouchBad();
     const cx=pts[Math.floor(pts.length/2)][0],cy=pts[Math.floor(pts.length/2)][1];
     spawnDmg(`+${gain}きもち`,'var(--rose)',cx,cy-20);spawnP(['💕'],cx,cy);doBounce();
-    if(strokeCombo>=8){showEmo('🥰 もっとなでて！');showToast(`コンボ${strokeCombo}！ きもち+${gain}`);}
-    else showEmo('😊 きもちいい');
+    if(strokeCombo>=8){showEmo('🥰');showToast(`コンボ${strokeCombo}！ きもち+${gain}`);}
+    else showEmo('stroke');
     renderAll();checkEvo();syncState();
   }
   strokeCombo=0;strokePoints=[];
 }
-function poke(cx,cy){if(!isNear(cx,cy,80))return;G.happy=clamp(G.happy+4);G.energy=clamp(G.energy+2);G.xp+=2;G.pts+=3;G.lastInteracted=Date.now();addStyle(0,1,4);checkTouchBad();doBounce();spawnP(['💥','⭐'],cx,cy);const r=G.badStatus.has('nervous')?['ちょっと！😤','やめて！']:['ぷにっ！','きゃ！','ふにゅ！'];spawnDmg(r[Math.floor(Math.random()*r.length)],'var(--teal)',cx,cy-20);showEmo(G.badStatus.has('nervous')?'😤 やめて！':r[0]);renderAll();checkEvo();syncState();}
-function detectCircle(){const pts=strokePoints;if(pts.length<22)return;const cx=pts.reduce((s,p)=>s+p[0],0)/pts.length,cy=pts.reduce((s,p)=>s+p[1],0)/pts.length;const radii=pts.map(p=>Math.hypot(p[0]-cx,p[1]-cy));const rm=radii.reduce((s,r)=>s+r,0)/radii.length;const rv=radii.reduce((s,r)=>s+(r-rm)**2,0)/radii.length;const angles=pts.map(p=>Math.atan2(p[1]-cy,p[0]-cx));let ar=0;for(let i=1;i<angles.length;i++){let d=angles[i]-angles[i-1];if(d>Math.PI)d-=2*Math.PI;if(d<-Math.PI)d+=2*Math.PI;ar+=Math.abs(d);}if(rv/(rm*rm)<0.3&&ar>Math.PI*1.5){G.happy=clamp(G.happy+15);G.xp+=8;G.pts+=10;G.lastInteracted=Date.now();addStyle(0,3,8);checkTouchBad();doBounce();'🌟💫⭐🎊✨'.split('').forEach((ic,i)=>setTimeout(()=>spawnP([ic],cx+Math.random()*36-18,cy+Math.random()*36-18),i*80));spawnDmg('くるくる！🌀','var(--purple)',cx,cy-28);showEmo('🎉 やったー！');renderAll();checkEvo();showToast('🌀 大喜び！ きもち+15');syncState();strokePoints=[];}}
+function poke(cx,cy){if(!isNear(cx,cy,80))return;G.happy=clamp(G.happy+4);G.energy=clamp(G.energy+2);G.xp+=2;G.pts+=3;G.lastInteracted=Date.now();addStyle(0,1,4);checkTouchBad();doBounce();spawnP(['💥','⭐'],cx,cy);const r=G.badStatus.has('nervous')?['ちょっと！😤','やめて！']:['ぷにっ！','きゃ！','ふにゅ！'];spawnDmg(r[Math.floor(Math.random()*r.length)],'var(--teal)',cx,cy-20);showEmo(G.badStatus.has('nervous')?'nervous':'poke');renderAll();checkEvo();syncState();}
+function detectCircle(){const pts=strokePoints;if(pts.length<22)return;const cx=pts.reduce((s,p)=>s+p[0],0)/pts.length,cy=pts.reduce((s,p)=>s+p[1],0)/pts.length;const radii=pts.map(p=>Math.hypot(p[0]-cx,p[1]-cy));const rm=radii.reduce((s,r)=>s+r,0)/radii.length;const rv=radii.reduce((s,r)=>s+(r-rm)**2,0)/radii.length;const angles=pts.map(p=>Math.atan2(p[1]-cy,p[0]-cx));let ar=0;for(let i=1;i<angles.length;i++){let d=angles[i]-angles[i-1];if(d>Math.PI)d-=2*Math.PI;if(d<-Math.PI)d+=2*Math.PI;ar+=Math.abs(d);}if(rv/(rm*rm)<0.3&&ar>Math.PI*1.5){G.happy=clamp(G.happy+15);G.xp+=8;G.pts+=10;G.lastInteracted=Date.now();addStyle(0,3,8);checkTouchBad();doBounce();'🌟💫⭐🎊✨'.split('').forEach((ic,i)=>setTimeout(()=>spawnP([ic],cx+Math.random()*36-18,cy+Math.random()*36-18),i*80));spawnDmg('くるくる！🌀','var(--purple)',cx,cy-28);showEmo('play');renderAll();checkEvo();showToast('🌀 大喜び！ きもち+15');syncState();strokePoints=[];}}
 function addTrail(cx,cy){const room=document.getElementById('room'),rr=room.getBoundingClientRect();const d=document.createElement('div');d.className='stroke-trail';const sz=5+Math.random()*5;d.style.cssText=`left:${cx-rr.left-sz/2}px;top:${cy-rr.top-sz/2}px;width:${sz}px;height:${sz}px;background:${interactMode==='stroke'?'rgba(251,113,133,.42)':'rgba(45,212,191,.42)'}`;room.appendChild(d);setTimeout(()=>d.remove(),500);}
 function setMode(m){interactMode=m;document.getElementById('modeStroke').classList.toggle('active',m==='stroke');document.getElementById('modePoke').classList.toggle('active',m==='poke');showToast(m==='stroke'?'✋ なでるモード':'👆 つつくモード');}
 
@@ -1438,7 +1485,28 @@ function switchTab(id,btn){
   if(id==='chat')setTimeout(()=>{const m=document.getElementById('chatMsgs');if(m)m.scrollTop=m.scrollHeight;},50);
 }
 const REPLIES=['バランスよく育てよう！','ごはんあげすぎ注意😅','もうすぐ進化しそう！','今夜ねかしつける🌙','部屋かわいくなったね🏠','最終形態楽しみ✨'];
-function sendChat(){const inp=document.getElementById('chatIn');const txt=inp.value.trim();if(!txt)return;inp.value='';addMsg('mine','🐱','あなた',txt);setTimeout(()=>{const n=[['🦊','みさき'],['🐻','たけし'],['🐼','ゆい']][Math.floor(Math.random()*3)];addMsg('',n[0],n[1],REPLIES[Math.floor(Math.random()*REPLIES.length)]);},900+Math.random()*500);}
+function sendChat(){
+  const inp=document.getElementById('chatIn');const txt=inp.value.trim();if(!txt)return;
+  inp.value='';addMsg('mine','🐱','あなた',txt);
+  // キーワードで担当 BOT を選ぶ
+  const low=txt;
+  let responder=null;
+  if(/食|ごはん|肉|果物|腹|배고|feed|food|hungry/.test(low))       responder=activeBots.find(b=>b.role==='ごはん係');
+  else if(/寝|眠|ねかし|疲|眠|sleep|tired|休/.test(low))           responder=activeBots.find(b=>b.role==='ねかし係');
+  else if(/遊|あそ|楽し|play|fun|一緒/.test(low))                  responder=activeBots.find(b=>b.role==='あそび係');
+  else if(/掃除|そうじ|汚|きたな|clean|ウンチ/.test(low))          responder=activeBots.find(b=>b.role==='そうじ係');
+  else if(/鍛|強|筋|バトル|運動|train|fight|戦/.test(low))         responder=activeBots.find(b=>b.role==='トレーニング係');
+  if(!responder&&activeBots.length>0) responder=activeBots[Math.floor(Math.random()*activeBots.length)];
+  const delay=800+Math.random()*700;
+  if(responder){
+    const pool=[...responder.phrases.act,...responder.phrases.idle];
+    setTimeout(()=>addMsg('',responder.avatar,responder.name,pool[Math.floor(Math.random()*pool.length)]),delay);
+  } else {
+    // BOT がいない場合のダミー返答
+    const n=[['🦊','みさき'],['🐻','たけし'],['🐼','ゆい']][Math.floor(Math.random()*3)];
+    setTimeout(()=>addMsg('',n[0],n[1],REPLIES[Math.floor(Math.random()*REPLIES.length)]),delay);
+  }
+}
 function addMsg(cls,av,name,txt){const msgs=document.getElementById('chatMsgs');const d=document.createElement('div');d.className='chat-msg '+cls;d.innerHTML=`<div class="chat-av">${av}</div><div><div class="chat-bub">${esc(txt)}</div><div class="chat-meta">${name}</div></div>`;msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;}
 function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 let toastT;
@@ -1492,7 +1560,7 @@ function doPlayStroke(){
   checkTouchBad();petBeh='play';petTimer=50;doBounce();
   spawnP(['💕','💖','✨'],window.innerWidth/2,window.innerHeight*.38);
   spawnDmg('+10きもち','var(--rose)',window.innerWidth/2,window.innerHeight*.28);
-  showEmo('😊 きもちいい');renderAll();checkEvo();syncState();showToast('💕 なでた！');
+  showEmo('stroke');renderAll();checkEvo();syncState();showToast('💕 なでた！');
 }
 function doPlayCircle(){
   closePlayPicker();
@@ -1500,14 +1568,14 @@ function doPlayCircle(){
   checkTouchBad();petBeh='play';petTimer=60;doBounce();
   spawnP(['🌀','💫','✨'],window.innerWidth/2,window.innerHeight*.38);
   spawnDmg('くるくる！🌀','var(--purple)',window.innerWidth/2,window.innerHeight*.28);
-  showEmo('🎉 やったー！');renderAll();checkEvo();syncState();showToast('🌀 大喜び！きもち+15');
+  showEmo('play');renderAll();checkEvo();syncState();showToast('🌀 大喜び！きもち+15');
 }
 function doPlayPoke(){
   closePlayPicker();
   G.happy=clamp(G.happy+4);G.energy=clamp(G.energy+2);G.xp+=2;G.pts+=3;G.lastInteracted=Date.now();addStyle(0,1,4);
   checkTouchBad();doBounce();
   spawnP(['💥','⭐'],window.innerWidth/2,window.innerHeight*.38);
-  showEmo('ぷにっ！');renderAll();checkEvo();syncState();showToast('👆 つついた！');
+  showEmo('poke');renderAll();checkEvo();syncState();showToast('👆 つついた！');
 }
 
 // ── Train Picker ──
@@ -1545,7 +1613,7 @@ function countRattleStroke(pts){
     clearTimeout(rattleTimeout);cancelRattleMode();
     G.sleepState='sleeping';petBeh='sleep';petTimer=200;G.lastInteracted=Date.now();
     SFX.sleep();
-    showEmo('💤 zzz…');showToast('🌙 ねかしつけた💤');
+    showEmo('sleep');showToast('🌙 ねかしつけた💤');
     setTimeout(()=>{if(G.sleepState==='sleeping'){G.sleepState='awake';G.energy=clamp(G.energy+20);rmBad('sleepy');SFX.wake();showToast('🌅 おきた！げんき回復✨');renderAll();}},30000);
   }
 }
@@ -1796,7 +1864,11 @@ function botAct(id){
   else msg=ph.act[Math.floor(Math.random()*ph.act.length)];
   botPts[id]=(botPts[id]||0)+(acted?20:3);
   bot.pts=botPts[id];
-  setTimeout(()=>addMsg('',bot.avatar,bot.name,msg),200+Math.random()*600);
+  // チャット投稿は低確率に抑える（acted:25% / idle:5%）
+  const chatProb=acted?0.25:0.05;
+  if(Math.random()<chatProb){
+    setTimeout(()=>addMsg('',bot.avatar,bot.name,msg),200+Math.random()*600);
+  }
   if(acted){doBounce();renderAll();checkEvo();syncState();}
   renderMembersTab();
 }

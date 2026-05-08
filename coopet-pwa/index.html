@@ -117,7 +117,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 .star{position:absolute;border-radius:50%;background:#fff;animation:twinkle var(--d,3s) ease-in-out infinite var(--delay,0s);}
 @keyframes twinkle{0%,100%{opacity:var(--a,.7)}50%{opacity:var(--b,.1)}}
 /* Room theme backgrounds */
-.room-bg{position:absolute;inset:0;transition:all .5s;}
+.room-bg{position:absolute;inset:0;transition:all .5s;background-size:cover;background-position:center bottom;background-repeat:no-repeat;}
 .ground{position:absolute;bottom:0;left:0;right:0;height:46px;pointer-events:none;}
 
 /* Furniture items in room */
@@ -452,6 +452,13 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 @keyframes exercise-bounce{0%,100%{transform:translateX(-50%)}50%{transform:translateX(-50%) translateY(-14px) scaleY(1.1)}}
 #petWrap.battle-anim{animation:battle-shake .35s ease-in-out infinite;}
 #petWrap.exercise-anim{animation:exercise-bounce .45s ease-in-out infinite;}
+.sleep-zzz{position:absolute;top:-10px;left:55%;pointer-events:none;opacity:0;transition:opacity .4s;}
+#petWrap.is-sleeping .sleep-zzz{opacity:1;}
+.zzz{position:absolute;font-size:.9rem;animation:zFloat 2.4s ease-in-out infinite;opacity:0;}
+.z1{left:0px; animation-delay:0s;    font-size:.85rem;}
+.z2{left:10px;animation-delay:.8s;   font-size:1rem;}
+.z3{left:2px; animation-delay:1.6s;  font-size:.75rem;}
+@keyframes zFloat{0%{opacity:0;transform:translateY(0) scale(.7);}20%{opacity:1;}80%{opacity:.7;}100%{opacity:0;transform:translateY(-32px) scale(1.1);}}
 /* lullaby rattle mode */
 #rattleOverlay{position:absolute;inset:0;z-index:15;display:none;align-items:center;justify-content:center;flex-direction:column;gap:8px;pointer-events:all;cursor:pointer;}
 #rattleOverlay.active{display:flex;}
@@ -589,6 +596,11 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
       <div class="bad-aura" id="badAura"></div>
       <svg id="petSvg" width="90" height="90" viewBox="-45 -45 90 90" style="overflow:visible"></svg>
       <div class="emobub" id="emoBub"></div>
+      <div class="sleep-zzz" id="sleepZzz">
+        <span class="zzz z1">💤</span>
+        <span class="zzz z2">💤</span>
+        <span class="zzz z3">💤</span>
+      </div>
     </div>
 
     <div class="mode-btn">
@@ -830,12 +842,10 @@ const PetSVG={
 //  ROOM THEMES
 // ══════════════════════════════════════════════════════════
 const THEMES=[
-  {id:'kids_room',  name:'こどもへや',   bg:'linear-gradient(180deg,#1a0d2e 0%,#240d3a 40%,#18082a 100%)', ground:'rgba(255,160,50,.1)',   groundBorder:'rgba(255,160,50,.2)',  stars:false, icon:'🪀'},
-  {id:'cozy_room',  name:'おうちのへや', bg:'linear-gradient(180deg,#1a0f08 0%,#241408 50%,#1a0e05 100%)', ground:'rgba(210,140,60,.1)',   groundBorder:'rgba(210,140,60,.2)',  stars:false, icon:'🏠'},
-  {id:'magic_cave', name:'まほうのどうくつ',bg:'linear-gradient(180deg,#04082a 0%,#070c38 50%,#030520 100%)',ground:'rgba(130,80,255,.1)',  groundBorder:'rgba(130,80,255,.22)', stars:true,  icon:'🔮'},
-  {id:'forest_field',name:'もりのひろば', bg:'linear-gradient(180deg,#081a08 0%,#0a2008 50%,#061505 100%)', ground:'rgba(74,222,128,.1)',   groundBorder:'rgba(74,222,128,.18)', stars:false, icon:'🌲'},
-  {id:'beach',      name:'うみべ',       bg:'linear-gradient(180deg,#180d04 0%,#0a1828 60%,#040c18 100%)',  ground:'rgba(210,180,80,.12)',  groundBorder:'rgba(210,180,80,.22)', stars:true,  icon:'🌊'},
-  {id:'snow_peak',  name:'ゆきやま',     bg:'linear-gradient(180deg,#040818 0%,#060c28 50%,#030618 100%)',  ground:'rgba(180,220,255,.12)', groundBorder:'rgba(180,220,255,.2)', stars:true,  icon:'❄️'},
+  {id:'room_day',   name:'昼のへや',   img:'bg/bg-room.png',   ground:'rgba(210,170,110,.18)', groundBorder:'rgba(180,140,80,.3)',  stars:false, icon:'🏠'},
+  {id:'garden',     name:'そとのにわ', img:'bg/bg-garden.png', ground:'rgba(80,180,80,.15)',   groundBorder:'rgba(60,160,60,.25)',  stars:false, icon:'🌿'},
+  {id:'room_night', name:'よるのへや', img:'bg/bg-night.png',  ground:'rgba(80,80,100,.18)',   groundBorder:'rgba(60,60,90,.3)',    stars:false, icon:'🌙'},
+  {id:'sky_dream',  name:'そらへや',   img:'bg/bg-sky.png',    ground:'rgba(200,220,255,.15)', groundBorder:'rgba(180,200,255,.25)',stars:false, icon:'☁️'},
 ];
 
 // ══════════════════════════════════════════════════════════
@@ -937,15 +947,15 @@ function buildSetupScreens(){
   const tg=document.getElementById('roomThemeGrid');tg.innerHTML='';
   THEMES.forEach((th,i)=>{
     const c=document.createElement('div');c.className='rt-card'+(i===0?' selected':'');
-    c.innerHTML=`<div class="rt-preview" style="background:${th.bg}">${th.icon}</div><div class="rt-label">${th.name}</div><div class="rt-check">✅</div>`;
-    c.addEventListener('click',()=>{document.querySelectorAll('.rt-card').forEach(x=>x.classList.remove('selected'));c.classList.add('selected');selTheme=th.id;});
+    c.innerHTML=`<div class="rt-preview" style="background-image:url('${th.img}');background-size:cover;background-position:center bottom;"></div><div class="rt-label">${th.icon} ${th.name}</div><div class="rt-check">✅</div>`;
+    c.addEventListener('click',()=>{document.querySelectorAll('.rt-card').forEach(x=>x.classList.remove('selected'));c.classList.add('selected');selTheme=th.id;applyTheme();});
     tg.appendChild(c);
   });
   // Room edit theme grid (in-game)
   const tg2=document.getElementById('themeGrid2');tg2.innerHTML='';
   THEMES.forEach(th=>{
     const c=document.createElement('div');c.className='theme-opt'+(th.id===selTheme?' selected':'');c.dataset.themeId=th.id;
-    c.innerHTML=`<div class="theme-preview" style="background:${th.bg}">${th.icon}</div><div class="theme-label">${th.name}</div>`;
+    c.innerHTML=`<div class="theme-preview" style="background-image:url('${th.img}');background-size:cover;background-position:center bottom;"></div><div class="theme-label">${th.icon} ${th.name}</div>`;
     c.addEventListener('click',()=>{selTheme=th.id;applyTheme();document.querySelectorAll('.theme-opt').forEach(x=>x.classList.remove('selected'));c.classList.add('selected');});
     tg2.appendChild(c);
   });
@@ -1042,13 +1052,17 @@ function startGame(){
 // ══ THEME ══
 function applyTheme(){
   const th=THEMES.find(t=>t.id===selTheme)||THEMES[0];
-  document.getElementById('roomBg').style.background=th.bg;
+  const rb=document.getElementById('roomBg');
+  rb.style.background='';
+  rb.style.backgroundImage=`url('${th.img}')`;
+  rb.style.backgroundSize='cover';
+  rb.style.backgroundPosition='center bottom';
   const g=document.getElementById('roomGround');
   g.style.background=`linear-gradient(0deg,${th.ground},transparent)`;
   g.style.borderTop=`1px solid ${th.groundBorder}`;
   const sc=document.getElementById('stars');sc.style.display=th.stars?'block':'none';
-  // update in-game theme-opt selection
   document.querySelectorAll('.theme-opt').forEach(c=>c.classList.toggle('selected',c.dataset.themeId===th.id));
+  document.querySelectorAll('.rt-card').forEach(c=>c.classList.toggle('selected',c.dataset.themeId===th.id));
 }
 
 // ══ ROOM EDIT OVERLAY ══
@@ -1235,7 +1249,17 @@ function pickBeh(){
   if(Math.random()<.18)showEmo();
 }
 function petUpdate(){
-  const wrap=document.getElementById('petWrap');petTimer--;if(petTimer<=0)pickBeh();
+  const wrap=document.getElementById('petWrap');
+  const isSleeping=(G.sleepState==='sleeping'||petBeh==='sleep');
+  wrap.classList.toggle('is-sleeping',isSleeping);
+  if(isSleeping){
+    // 睡眠中は動きを完全停止
+    wrap.style.left=petX+'%';
+    wrap.style.transform='translateX(-50%) rotate(14deg)';
+    const rd=getCurRenderer();drawPet(document.getElementById('petSvg'),rd,petDir,'sleep',G.badStatus.size>0);
+    return;
+  }
+  petTimer--;if(petTimer<=0)pickBeh();
   let tx='translateX(-50%)';
   if(petBeh==='walk'){petX+=petDir*(.28+Math.random()*.12);petX=Math.max(10,Math.min(88,petX));if(Math.abs(petX-petTargetX)<1){petBeh='idle';petTimer=40;}tx=`translateX(-50%) rotate(${Math.sin(Date.now()/140)*2.2}deg)`;}
   else if(petBeh==='play'){const j=Math.abs(Math.sin(Date.now()/260))*12;tx=`translateX(-50%) translateY(-${j}px)`;}

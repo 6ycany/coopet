@@ -121,8 +121,9 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 .ground{position:absolute;bottom:0;left:0;right:0;height:46px;pointer-events:none;}
 
 /* Furniture items in room */
-.furniture-item{position:absolute;cursor:pointer;user-select:none;touch-action:none;z-index:12;font-size:28px;line-height:1;transition:transform .1s;transform-origin:center bottom;}
-.furniture-item:hover{transform:scale(1.1);}
+.furniture-item{position:absolute;cursor:pointer;user-select:none;touch-action:none;z-index:12;line-height:1;transition:transform .1s;transform-origin:center bottom;}
+.furniture-item img{display:block;height:var(--fsz,64px);width:auto;filter:drop-shadow(0 3px 5px rgba(0,0,0,.3));}
+.furniture-item:hover{transform:translateX(-50%) scale(1.1) !important;}
 .furniture-item.dragging-room{opacity:.85;z-index:50;pointer-events:none;}
 .furniture-item .f-del{position:absolute;top:-8px;right:-8px;width:18px;height:18px;border-radius:50%;background:var(--red);border:2px solid var(--bg);font-size:10px;display:none;align-items:center;justify-content:center;cursor:pointer;z-index:60;color:#fff;}
 .furniture-item.selected .f-del{display:flex;}
@@ -212,7 +213,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 .furn-item:hover{border-color:var(--teal);transform:translateY(-2px);}
 .furn-item:active{transform:scale(.93);}
 .furn-item .f-name{font-size:.5rem;color:var(--muted);}
-.furn-ghost{position:fixed;pointer-events:none;z-index:9999;font-size:34px;transform:translate(-50%,-50%);display:none;filter:drop-shadow(0 4px 8px rgba(45,212,191,.4));}
+.furn-ghost{position:fixed;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);display:none;filter:drop-shadow(0 4px 8px rgba(45,212,191,.5));}
+.furn-ghost img{height:64px;width:auto;opacity:.8;}
 
 /* ══ BOTTOM PANEL ══ */
 .bottom-panel{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg);}
@@ -852,22 +854,16 @@ const THEMES=[
 //  FURNITURE CATALOGUE
 // ══════════════════════════════════════════════════════════
 const FURNITURE=[
-  {id:'tree',   icon:'🌲', name:'木'},
-  {id:'flower', icon:'🌸', name:'花'},
-  {id:'sofa',   icon:'🛋️', name:'ソファ'},
-  {id:'lamp',   icon:'🪔', name:'ランプ'},
-  {id:'rock',   icon:'🪨', name:'岩'},
-  {id:'mushroom',icon:'🍄',name:'キノコ'},
-  {id:'chest',  icon:'📦', name:'宝箱'},
-  {id:'pond',   icon:'💧', name:'池'},
-  {id:'sign',   icon:'🪧', name:'看板'},
-  {id:'basket', icon:'🧺', name:'バスケ'},
-  {id:'candle', icon:'🕯️', name:'ろうそく'},
-  {id:'gem',    icon:'💎', name:'宝石'},
-  {id:'star',   icon:'⭐', name:'星'},
-  {id:'bell',   icon:'🔔', name:'ベル'},
-  {id:'book',   icon:'📚', name:'本棚'},
-  {id:'ball',   icon:'⚽', name:'ボール'},
+  {id:'board',    img:'furn/furn-board.png',    name:'掲示板',   sz:72},
+  {id:'igloo',    img:'furn/furn-igloo.png',    name:'ペットハウス', sz:72},
+  {id:'table',    img:'furn/furn-table.png',    name:'丸テーブル', sz:72},
+  {id:'plant',    img:'furn/furn-plant.png',    name:'観葉植物', sz:64},
+  {id:'window',   img:'furn/furn-window.png',   name:'窓',      sz:80},
+  {id:'igloo_sm', img:'furn/furn-igloo_sm.png', name:'ミニハウス', sz:60},
+  {id:'rug',      img:'furn/furn-rug.png',      name:'ラグ',    sz:68},
+  {id:'lamp',     img:'furn/furn-lamp.png',     name:'ランプ',  sz:56},
+  {id:'tower',    img:'furn/furn-tower.png',    name:'キャットタワー', sz:70},
+  {id:'frame',    img:'furn/furn-frame.png',    name:'額縁',    sz:60},
 ];
 
 // ══════════════════════════════════════════════════════════
@@ -962,10 +958,10 @@ function buildSetupScreens(){
   // Furniture grid
   const fg=document.getElementById('furnGrid');fg.innerHTML='';
   FURNITURE.forEach(f=>{
-    const el=document.createElement('div');el.className='furn-item';el.dataset.icon=f.icon;el.dataset.id=f.id;el.dataset.name=f.name;
-    el.innerHTML=`<span style="font-size:24px">${f.icon}</span><div class="f-name">${f.name}</div>`;
-    el.addEventListener('touchstart',e=>{e.preventDefault();startFurnDrag(f.icon,e.touches[0].clientX,e.touches[0].clientY);},{passive:false});
-    el.addEventListener('mousedown',e=>startFurnDrag(f.icon,e.clientX,e.clientY));
+    const el=document.createElement('div');el.className='furn-item';el.dataset.img=f.img;el.dataset.id=f.id;el.dataset.name=f.name;el.dataset.sz=f.sz||64;
+    el.innerHTML=`<img src="${f.img}" style="height:44px;width:auto;pointer-events:none"><div class="f-name">${f.name}</div>`;
+    el.addEventListener('touchstart',e=>{e.preventDefault();startFurnDrag(f.img,f.sz||64,e.touches[0].clientX,e.touches[0].clientY);},{passive:false});
+    el.addEventListener('mousedown',e=>startFurnDrag(f.img,f.sz||64,e.clientX,e.clientY));
     fg.appendChild(el);
   });
 }
@@ -1076,10 +1072,11 @@ function reTab(id,btn){document.querySelectorAll('.re-tab').forEach(b=>b.classLi
 let furnDrag={active:false,icon:'',ghost:null};
 let furnDragX=0,furnDragY=0;
 
-function startFurnDrag(icon,cx,cy){
-  furnDrag={active:true,icon};
+function startFurnDrag(img,sz,cx,cy){
+  furnDrag={active:true,img,sz};
   const g=document.getElementById('furnGhost');
-  g.textContent=icon;g.style.display='block';
+  g.innerHTML=`<img src="${img}" style="height:${sz}px;width:auto">`;
+  g.style.display='block';
   moveFurnGhost(cx,cy);
   document.addEventListener('touchmove',onFurnMove,{passive:false});
   document.addEventListener('touchend',onFurnDrop,{passive:false});
@@ -1103,23 +1100,26 @@ function onFurnDrop(e){
   if(furnDragX>rr.left&&furnDragX<rr.right&&furnDragY>rr.top&&furnDragY<rr.bottom){
     const xPct=((furnDragX-rr.left)/rr.width)*100;
     const yPct=((furnDragY-rr.top)/rr.height)*100;
-    placeFurnitureAt(furnDrag.icon,xPct,yPct);
+    placeFurnitureAt(furnDrag.img,xPct,yPct,furnDrag.sz);
   }
-  furnDrag={active:false,icon:''};
+  furnDrag={active:false,img:'',sz:64};
 }
 
 function initFurnDrop(){
   // furniture items already draggable from palette; just ensure room drop works
 }
 
-function placeFurnitureAt(icon,xPct,yPct){
+function placeFurnitureAt(img,xPct,yPct,sz){
+  sz=sz||64;
   const id='f'+Date.now();
   const room=document.getElementById('room');
   const el=document.createElement('div');
-  el.className='furniture-item';el.id=id;el.textContent=icon;
-  el.style.left=xPct+'%';el.style.top=yPct+'%';
-  el.style.transform='translateX(-50%)';
-  // delete btn
+  el.className='furniture-item';el.id=id;
+  el.style.cssText=`left:${xPct}%;top:${yPct}%;transform:translateX(-50%);--fsz:${sz}px`;
+  const imgEl=document.createElement('img');
+  imgEl.src=img;imgEl.style.cssText=`height:${sz}px;width:auto;display:block;pointer-events:none`;
+  imgEl.draggable=false;
+  el.appendChild(imgEl);
   const del=document.createElement('div');del.className='f-del';del.textContent='✕';
   del.addEventListener('click',e=>{e.stopPropagation();removeFurniture(id);});
   el.appendChild(del);
@@ -1127,8 +1127,9 @@ function placeFurnitureAt(icon,xPct,yPct){
   makeFurnitureDraggable(el);
   if(!G.furnEditMode)el.classList.add('locked');
   room.appendChild(el);
-  placedFurniture.push({id,icon,xPct,yPct,el});
-  showToast(icon+' を置いた！');
+  const fname=FURNITURE.find(f=>f.img===img)?.name||'家具';
+  placedFurniture.push({id,img,sz,xPct,yPct,el});
+  showToast(fname+' を置いた！');
 }
 
 function selectFurniture(id){
@@ -1339,7 +1340,7 @@ function saveGame(){
          physical:G.physical,clean:G.clean,lightOn:G.lightOn,sleepState:G.sleepState,
          badStatus:[...G.badStatus]},
       evo:JSON.parse(JSON.stringify(evoUnlocked)),
-      furniture:placedFurniture.map(f=>({id:f.id,icon:f.icon,xPct:f.xPct,yPct:f.yPct}))
+      furniture:placedFurniture.map(f=>({id:f.id,img:f.img||f.icon,sz:f.sz||64,xPct:f.xPct,yPct:f.yPct}))
     };
     localStorage.setItem(SAVE_KEY,JSON.stringify(data));
   }catch(e){console.warn('[save] failed:',e);}
@@ -1361,7 +1362,7 @@ function loadAndContinue(){
   document.getElementById('s-game').classList.add('active');
   applyTheme();buildFoodTray();buildEvoUI();renderAll();startPetAI();initDrag();initStroke();initFurnDrop();startBGM();
   setInterval(passiveTick,10000);setInterval(checkLonely,30000);
-  if(d.furniture){d.furniture.forEach(f=>placeFurnitureAt(f.icon,f.xPct,f.yPct));}
+  if(d.furniture){d.furniture.forEach(f=>placeFurnitureAt(f.img||f.icon,f.xPct,f.yPct,f.sz||64));}
   addMsg('mine','🐱','あなた',`${petName}（${PETS[selPet].eggName}）のつづき✨`);
 }
 

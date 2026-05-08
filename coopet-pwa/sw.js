@@ -1,5 +1,5 @@
 // CooPet Service Worker — オフライン対応
-const CACHE_NAME = 'coopet-v3';
+const CACHE_NAME = 'coopet-v4';
 
 // sw.js の場所を基準にベースパスを自動取得（GitHub Pages サブパス対応）
 const BASE = self.location.pathname.replace(/sw\.js$/, '');
@@ -15,6 +15,16 @@ const PRECACHE_URLS = [
   BASE + 'bg/bg-garden.png',
   BASE + 'bg/bg-night.png',
   BASE + 'bg/bg-sky.png',
+  BASE + 'furn/furn-board.png',
+  BASE + 'furn/furn-igloo.png',
+  BASE + 'furn/furn-table.png',
+  BASE + 'furn/furn-plant.png',
+  BASE + 'furn/furn-window.png',
+  BASE + 'furn/furn-igloo_sm.png',
+  BASE + 'furn/furn-rug.png',
+  BASE + 'furn/furn-lamp.png',
+  BASE + 'furn/furn-tower.png',
+  BASE + 'furn/furn-frame.png',
   // Google Fonts は別途キャッシュ
   'https://fonts.googleapis.com/css2?family=Kaisei+Decol:wght@400;700&family=M+PLUS+Rounded+1c:wght@400;700;900&display=swap',
 ];

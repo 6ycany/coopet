@@ -153,7 +153,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 .edit-room-btn:hover{border-color:var(--teal);}
 
 /* Pet */
-#petWrap{position:absolute;bottom:28px;z-index:10;touch-action:none;cursor:pointer;}
+#petWrap{position:absolute;bottom:28px;z-index:30;touch-action:none;cursor:pointer;}
 #petSvg{overflow:visible;display:block;}
 .emobub{position:absolute;top:-44px;left:50%;transform:translateX(-50%) scale(0.6);background:none;border:none;border-radius:50%;padding:0;font-size:1.7rem;line-height:1;white-space:nowrap;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:20;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));}
 .emobub.show{opacity:1;transform:translateX(-50%) scale(1);}
@@ -640,15 +640,20 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
         <button class="re-done" onclick="closeRoomEdit()">完了</button>
       </div>
       <div class="re-tabs">
-        <div class="re-tab active" onclick="reTab('theme',this)">背景</div>
-        <div class="re-tab" onclick="reTab('furn',this)">家具</div>
+        <div class="re-tab active" onclick="reTab('theme',this)">🖼 背景</div>
+        <div class="re-tab" onclick="reTab('furn',this)">📦 家具</div>
+        <div class="re-tab" onclick="reTab('move',this)">✋ 模様替え</div>
       </div>
       <div class="re-pane active" id="re-theme">
         <div class="theme-grid" id="themeGrid2"></div>
       </div>
       <div class="re-pane" id="re-furn">
-        <div style="font-size:.6rem;color:var(--muted);margin-bottom:8px">家具をドラッグして部屋に置こう！📌 タップで選択→移動 🔒 選択中にピンチでサイズ変更 ✕ で削除</div>
+        <div style="font-size:.6rem;color:var(--muted);margin-bottom:8px">📦 カタログから家具をドラッグして部屋に置こう</div>
         <div class="furn-grid" id="furnGrid"></div>
+      </div>
+      <div class="re-pane" id="re-move">
+        <div style="font-size:.6rem;color:var(--muted);margin-bottom:8px">✋ 部屋の家具をドラッグして移動。＋／－でサイズ変更。✕で削除</div>
+        <div id="placedFurnList" style="display:flex;flex-wrap:wrap;gap:6px;padding:2px 0"></div>
       </div>
     </div>
   </div>
@@ -1068,45 +1073,36 @@ function applyTheme(){
   document.querySelectorAll('.rt-card').forEach(c=>c.classList.toggle('selected',c.dataset.themeId===th.id));
 }
 
-// ══ ROOM EDIT OVERLAY（配置モード） ══
+// ══ ROOM EDIT OVERLAY ══
 function openRoomEdit(){
-  // 移動モードが ON なら先に解除
-  if(G.furnMoveMode) exitMoveMode();
   G.furnEditMode=true;
   document.getElementById('roomEditOverlay').classList.add('open');
   document.getElementById('furnEditBtn').classList.add('on');
-  document.getElementById('furnEditBanner').textContent='📌 配置モード：カタログから家具をドラッグ';
-  document.getElementById('furnEditBanner').classList.add('show');
-  // 配置モード中は既存家具をロック
+  // 開いた時は背景タブ → 既存家具ロック（reTabで切り替え時に制御）
   placedFurniture.forEach(f=>{f.el.classList.add('locked');});
 }
 function closeRoomEdit(){
   G.furnEditMode=false;
+  G.furnMoveMode=false;
   document.getElementById('roomEditOverlay').classList.remove('open');
   document.getElementById('furnEditBtn').classList.remove('on');
-  document.getElementById('furnEditBanner').classList.remove('show');
-  placedFurniture.forEach(f=>{f.el.classList.add('locked');});
-}
-// ── 移動モード ──
-function enterMoveMode(){
-  // 配置モードが ON なら先に閉じる
-  if(G.furnEditMode) closeRoomEdit();
-  G.furnMoveMode=true;
-  document.getElementById('furnEditBtn').classList.add('on');
-  document.getElementById('furnEditBanner').textContent='✋ 移動モード：家具をドラッグして移動・＋－でサイズ変更';
-  document.getElementById('furnEditBanner').classList.add('show');
-  placedFurniture.forEach(f=>{f.el.classList.remove('locked');});
-  showToast('✋ 移動モード ON — タップで選択・ドラッグで移動');
-}
-function exitMoveMode(){
-  G.furnMoveMode=false;
-  document.getElementById('furnEditBtn').classList.remove('on');
-  document.getElementById('furnEditBanner').classList.remove('show');
   placedFurniture.forEach(f=>{f.el.classList.add('locked');});
   deselectAll();
-  showToast('🔒 移動モード OFF');
+  // 背景タブに戻す
+  const firstTab=document.querySelector('.re-tab:nth-child(1)');
+  if(firstTab){document.querySelectorAll('.re-tab').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.re-pane').forEach(p=>p.classList.remove('active'));firstTab.classList.add('active');document.getElementById('re-theme').classList.add('active');}
 }
-function reTab(id,btn){document.querySelectorAll('.re-tab').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.re-pane').forEach(p=>p.classList.remove('active'));btn.classList.add('active');document.getElementById('re-'+id).classList.add('active');}
+function reTab(id,btn){
+  document.querySelectorAll('.re-tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.re-pane').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('re-'+id).classList.add('active');
+  // 模様替えタブ: 家具を移動可能に
+  const moveMode=(id==='move');
+  G.furnMoveMode=moveMode;
+  placedFurniture.forEach(f=>{f.el.classList.toggle('locked',!moveMode);});
+  if(moveMode) renderPlacedFurnList();
+}
 
 // ══════════════════════════════════════════════════════════
 //  FURNITURE PLACEMENT
@@ -1198,6 +1194,22 @@ function selectFurniture(id){
   if(item)item.el.classList.add('selected');
 }
 function deselectAll(){selectedFurnId=null;placedFurniture.forEach(f=>f.el.classList.remove('selected'));}
+function renderPlacedFurnList(){
+  const list=document.getElementById('placedFurnList');if(!list)return;
+  list.innerHTML='';
+  if(placedFurniture.length===0){list.innerHTML='<div style="font-size:.62rem;color:var(--muted);padding:8px">まだ家具がありません</div>';return;}
+  placedFurniture.forEach(f=>{
+    const item=document.createElement('div');
+    item.style.cssText='display:flex;flex-direction:column;align-items:center;gap:3px;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:6px;cursor:pointer;transition:border-color .2s;min-width:52px;';
+    item.innerHTML=`<img src="${f.img}" style="height:36px;width:auto"><div style="font-size:.48rem;color:var(--muted)">${FURNITURE.find(x=>x.img===f.img)?.name||'家具'}</div>`;
+    item.addEventListener('click',()=>{
+      // パネル内クリックで部屋のその家具を選択状態にしてハイライト
+      deselectAll();selectFurniture(f.id);
+      item.style.borderColor='var(--teal)';
+    });
+    list.appendChild(item);
+  });
+}
 function resizeFurniture(id,factor){
   const f=placedFurniture.find(f=>f.id===id);if(!f)return;
   const m=(f.el.style.transform||'').match(/scale\(([\d.]+)\)/);
@@ -1216,19 +1228,13 @@ function removeFurniture(id){
 }
 
 function toggleFurnEdit(){
-  if(!G.furnEditMode&&!G.furnMoveMode){
-    // OFF → 配置モード
-    openRoomEdit();
-    const furnTab=document.querySelector('.re-tab:nth-child(2)');
-    if(furnTab) reTab('furn',furnTab);
-    showToast('📌 配置モード ON');
-  } else if(G.furnEditMode&&!G.furnMoveMode){
-    // 配置モード → 移動モード
+  if(document.getElementById('roomEditOverlay').classList.contains('open')){
     closeRoomEdit();
-    enterMoveMode();
   } else {
-    // 移動モード → OFF
-    exitMoveMode();
+    // 模様替えタブを開く
+    openRoomEdit();
+    const moveTab=document.querySelector('.re-tab:nth-child(3)');
+    if(moveTab) reTab('move',moveTab);
   }
 }
 function makeFurnitureDraggable(el){

@@ -72,17 +72,28 @@ jobs:
           for d in mdpi hdpi xhdpi xxhdpi xxxhdpi; do
             mkdir -p "android/app/src/main/res/mipmap-${d}"
           done
-          # mdpi=48, hdpi=72, xhdpi=96, xxhdpi=144, xxxhdpi=192
-          convert coopet-pwa/icons/icon-512x512.png -resize 48x48  android/app/src/main/res/mipmap-mdpi/ic_launcher.png
-          convert coopet-pwa/icons/icon-512x512.png -resize 48x48  android/app/src/main/res/mipmap-mdpi/ic_launcher_round.png
-          cp coopet-pwa/icons/icon-72x72.png   android/app/src/main/res/mipmap-hdpi/ic_launcher.png
-          cp coopet-pwa/icons/icon-72x72.png   android/app/src/main/res/mipmap-hdpi/ic_launcher_round.png
-          cp coopet-pwa/icons/icon-96x96.png   android/app/src/main/res/mipmap-xhdpi/ic_launcher.png
-          cp coopet-pwa/icons/icon-96x96.png   android/app/src/main/res/mipmap-xhdpi/ic_launcher_round.png
-          cp coopet-pwa/icons/icon-144x144.png android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
-          cp coopet-pwa/icons/icon-144x144.png android/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png
-          cp coopet-pwa/icons/icon-192x192.png android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
-          cp coopet-pwa/icons/icon-192x192.png android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png
+          # Python + Pillow でリサイズ（ImageMagick 不要）
+          pip install --quiet Pillow
+          python3 - <<'PYEOF'
+          from PIL import Image
+          import shutil, os
+          src = "coopet-pwa/icons/icon-512x512.png"
+          res = "android/app/src/main/res"
+          sizes = {
+            "mipmap-mdpi":    48,
+            "mipmap-hdpi":    72,
+            "mipmap-xhdpi":   96,
+            "mipmap-xxhdpi":  144,
+            "mipmap-xxxhdpi": 192,
+          }
+          img = Image.open(src).convert("RGBA")
+          for dpi, size in sizes.items():
+            resized = img.resize((size, size), Image.LANCZOS)
+            for name in ["ic_launcher.png", "ic_launcher_round.png"]:
+              out = os.path.join(res, dpi, name)
+              resized.save(out)
+              print(f"Created {out} ({size}x{size})")
+          PYEOF
 
       # ─────────────────────────────────────────────
       # 4. Gradle wrapper を生成

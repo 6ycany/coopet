@@ -122,11 +122,16 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 
 /* Furniture items in room */
 .furniture-item{position:absolute;cursor:pointer;user-select:none;touch-action:none;z-index:12;line-height:1;transition:transform .1s;transform-origin:center bottom;}
+.furniture-item:not(.locked){z-index:110;cursor:grab;}
 .furniture-item img{display:block;height:var(--fsz,64px);width:auto;filter:drop-shadow(0 3px 5px rgba(0,0,0,.3));}
 .furniture-item:hover{transform:translateX(-50%) scale(1.1) !important;}
 .furniture-item.dragging-room{opacity:.85;z-index:50;pointer-events:none;}
 .furniture-item .f-del{position:absolute;top:-8px;right:-8px;width:18px;height:18px;border-radius:50%;background:var(--red);border:2px solid var(--bg);font-size:10px;display:none;align-items:center;justify-content:center;cursor:pointer;z-index:60;color:#fff;}
 .furniture-item.selected .f-del{display:flex;}
+.f-scale{position:absolute;width:20px;height:20px;border-radius:50%;background:rgba(45,212,191,.9);border:2px solid var(--bg);font-size:13px;line-height:18px;text-align:center;cursor:pointer;z-index:60;color:#07091a;font-weight:700;display:none;}
+.f-scale-up{top:-8px;left:-8px;}
+.f-scale-dn{bottom:-8px;left:-8px;}
+.furniture-item.selected .f-scale{display:block;}
 .furniture-item.selected{outline:2px dashed rgba(45,212,191,.5);outline-offset:3px;border-radius:4px;}
 
 /* HUD */
@@ -189,8 +194,10 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 .modeopt.active{border-color:var(--teal);background:rgba(45,212,191,.1);}
 
 /* ══ ROOM EDIT OVERLAY ══ */
-#roomEditOverlay{position:absolute;inset:0;z-index:100;display:none;flex-direction:column;}
+#roomEditOverlay{position:absolute;bottom:0;left:0;right:0;height:52%;z-index:100;display:none;flex-direction:column;border-top:2px solid var(--teal);border-radius:14px 14px 0 0;overflow:hidden;}
 #roomEditOverlay.open{display:flex;}
+/* 部屋の上部(家具操作エリア)はオーバーレイを透過 */
+#roomEditOverlay::before{content:'';position:absolute;top:-999px;left:0;right:0;height:999px;pointer-events:none;}
 .re-header{background:rgba(7,9,26,.88);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);padding:8px 12px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
 .re-title{font-size:.78rem;font-weight:700;}
 .re-done{background:linear-gradient(135deg,var(--blue),var(--teal));border:none;border-radius:8px;padding:5px 14px;font-family:inherit;font-size:.72rem;font-weight:700;color:#07091a;cursor:pointer;}
@@ -1113,9 +1120,19 @@ function onFurnDrop(e){
   document.getElementById('furnGhost').style.display='none';
   const room=document.getElementById('room');
   const rr=room.getBoundingClientRect();
-  if(furnDragX>rr.left&&furnDragX<rr.right&&furnDragY>rr.top&&furnDragY<rr.bottom){
+  const ov=document.getElementById('roomEditOverlay');
+  const or=ov.getBoundingClientRect();
+  // オーバーレイより上の部屋エリアにドロップした場合のみ配置
+  const inRoom=furnDragX>rr.left&&furnDragX<rr.right&&furnDragY>rr.top&&furnDragY<rr.bottom;
+  const onPanel=furnDragY>=or.top;
+  if(inRoom&&!onPanel){
     const xPct=((furnDragX-rr.left)/rr.width)*100;
     const yPct=((furnDragY-rr.top)/rr.height)*100;
+    placeFurnitureAt(furnDrag.img,xPct,yPct,furnDrag.sz);
+  } else if(inRoom&&onPanel){
+    // パネル上でドロップ → 部屋の上半分中央に配置
+    const xPct=20+Math.random()*60;
+    const yPct=15+Math.random()*35;
     placeFurnitureAt(furnDrag.img,xPct,yPct,furnDrag.sz);
   }
   furnDrag={active:false,img:'',sz:64};
@@ -1139,6 +1156,13 @@ function placeFurnitureAt(img,xPct,yPct,sz){
   const del=document.createElement('div');del.className='f-del';del.textContent='✕';
   del.addEventListener('click',e=>{e.stopPropagation();removeFurniture(id);});
   el.appendChild(del);
+  // サイズ変更ボタン(選択時のみ表示)
+  const scaleUp=document.createElement('div');scaleUp.className='f-scale f-scale-up';scaleUp.textContent='＋';
+  scaleUp.addEventListener('click',e=>{e.stopPropagation();resizeFurniture(id,1.2);});
+  el.appendChild(scaleUp);
+  const scaleDown=document.createElement('div');scaleDown.className='f-scale f-scale-dn';scaleDown.textContent='－';
+  scaleDown.addEventListener('click',e=>{e.stopPropagation();resizeFurniture(id,0.8);});
+  el.appendChild(scaleDown);
   el.addEventListener('click',e=>{e.stopPropagation();if(G.furnEditMode)selectFurniture(id);});
   makeFurnitureDraggable(el);
   if(!G.furnEditMode)el.classList.add('locked');
@@ -1155,6 +1179,14 @@ function selectFurniture(id){
   if(item)item.el.classList.add('selected');
 }
 function deselectAll(){selectedFurnId=null;placedFurniture.forEach(f=>f.el.classList.remove('selected'));}
+function resizeFurniture(id,factor){
+  const f=placedFurniture.find(f=>f.id===id);if(!f)return;
+  const m=(f.el.style.transform||'').match(/scale\(([\d.]+)\)/);
+  const cur=m?parseFloat(m[1]):1;
+  const next=Math.min(3,Math.max(0.3,cur*factor));
+  f.el.style.transform=`translateX(-50%) scale(${next})`;
+  f.scale=next;
+}
 function onDocClick(e){if(!e.target.closest('.furniture-item')&&!e.target.closest('#furnGrid')&&!e.target.closest('#roomEditOverlay'))deselectAll();}
 function removeFurniture(id){
   const idx=placedFurniture.findIndex(f=>f.id===id);
@@ -1201,6 +1233,7 @@ function makeFurnitureDraggable(el){
     document.removeEventListener('touchmove',fOnMove);document.removeEventListener('touchend',fOnUp);
     document.removeEventListener('mousemove',fOnMove);document.removeEventListener('mouseup',fOnUp);
     el.style.opacity='1';
+    el.style.zIndex='';
   };
   el.addEventListener('touchstart',e=>{
     e.stopPropagation();if(e.target.classList.contains('f-del'))return;
@@ -1211,13 +1244,13 @@ function makeFurnitureDraggable(el){
       fPinching=true;fIsDragging=false;
       fInitDist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
       fInitScale=getScale();
-    } else {fIsDragging=true;fPinching=false;el.style.opacity='.8';}
+    } else {fIsDragging=true;fPinching=false;el.style.opacity='.8';el.style.zIndex='200';}
     document.addEventListener('touchmove',fOnMove,{passive:false});document.addEventListener('touchend',fOnUp,{passive:false});
   },{passive:false});
   el.addEventListener('mousedown',e=>{
     e.stopPropagation();if(e.target.classList.contains('f-del'))return;
     if(!G.furnEditMode){return;} // only draggable in edit mode
-    selectFurniture(el.id);fIsDragging=true;el.style.opacity='.8';
+    selectFurniture(el.id);fIsDragging=true;el.style.opacity='.8';el.style.zIndex='200';
     document.addEventListener('mousemove',fOnMove);document.addEventListener('mouseup',fOnUp);
   });
 }

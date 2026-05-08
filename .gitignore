@@ -1,0 +1,24 @@
+# Node
+node_modules/
+
+# Android builds & secrets
+android/build/
+android/app/build/
+android/gradlew
+android/gradlew.bat
+android/gradle/wrapper/gradle-wrapper.jar
+android/.gradle/
+android/*.keystore
+android/*.jks
+android/local.properties
+
+# IDE
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Deploy staging
+deploy-dist/

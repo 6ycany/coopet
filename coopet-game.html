@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>CooPet — ゲームプロトタイプ</title>
+<link href="https://fonts.googleapis.com/css2?family=Kaisei+Decol:wght@400;700&family=M+PLUS+Rounded+1c:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0e1a;
+  --panel: #111827;
+  --panel2: #1a2235;
+  --border: rgba(100,180,255,0.15);
+  --blue: #4da6ff;
+  --teal: #2dd4bf;
+  --rose: #fb7185;
+  --amber: #fbbf24;
+  --green: #4ade80;
+  --text: #e2e8f0;
+  --muted: #64748b;
+  --radius: 18px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; font-family: 'M PLUS Rounded 1c', sans-serif; background: var(--bg); color: var(--text); }
+
+/* ── Stars bg ── */
+body::before {
+  content: ''; position: fixed; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 15% 20%, rgba(77,166,255,0.08) 0%, transparent 100%),
+    radial-gradient(ellipse 50% 60% at 85% 80%, rgba(45,212,191,0.07) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+/* ── App shell ── */
+.app { position: relative; z-index: 1; max-width: 430px; height: 100dvh; margin: 0 auto; display: flex; flex-direction: column; overflow: hidden; }
+
+/* ── Screens ── */
+.screen { flex: 1; display: none; flex-direction: column; overflow: hidden; }
+.screen.active { display: flex; }
+
+/* ══════════════════════════════════
+   SCREEN 1: PET SELECTION
+══════════════════════════════════ */
+#screen-select {
+  padding: 30px 20px 20px;
+  overflow-y: auto;
+  gap: 0;
+}
+.select-title {
+  font-family: 'Kaisei Decol', serif;
+  font-size: 1.5rem; font-weight: 700;
+  text-align: center; margin-bottom: 4px;
+  background: linear-gradient(135deg, var(--blue), var(--teal));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.select-sub { text-align: center; color: var(--muted); font-size: 0.8rem; margin-bottom: 24px; }
+.pet-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+.pet-option {
+  background: var(--panel); border: 2px solid var(--border);
+  border-radius: var(--radius); padding: 18px 12px;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  cursor: pointer; transition: all 0.25s; position: relative; overflow: hidden;
+}
+.pet-option::before { content: ''; position: absolute; inset: 0; opacity: 0; transition: opacity 0.25s; }
+.pet-option:nth-child(1)::before { background: radial-gradient(circle at 50% 50%, rgba(251,113,133,0.12), transparent 70%); }
+.pet-option:nth-child(2)::before { background: radial-gradient(circle at 50% 50%, rgba(77,166,255,0.12), transparent 70%); }
+.pet-option:nth-child(3)::before { background: radial-gradient(circle at 50% 50%, rgba(45,212,191,0.12), transparent 70%); }
+.pet-option:nth-child(4)::before { background: radial-gradient(circle at 50% 50%, rgba(251,191,36,0.12), transparent 70%); }
+.pet-option.selected { border-color: var(--teal); box-shadow: 0 0 20px rgba(45,212,191,0.3); }
+.pet-option.selected::before { opacity: 1; }
+.pet-option:hover { transform: translateY(-3px); }
+.pet-emoji { font-size: 54px; line-height: 1; animation: bobble 3s ease-in-out infinite; }
+.pet-option:nth-child(2) .pet-emoji { animation-delay: 0.5s; }
+.pet-option:nth-child(3) .pet-emoji { animation-delay: 1s; }
+.pet-option:nth-child(4) .pet-emoji { animation-delay: 1.5s; }
+@keyframes bobble { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+.pet-name { font-weight: 700; font-size: 0.9rem; }
+.pet-type { font-size: 0.65rem; color: var(--muted); }
+.pet-traits { display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; }
+.trait { font-size: 0.58rem; padding: 2px 6px; border-radius: 99px; background: rgba(255,255,255,0.07); color: var(--muted); }
+.selected-check { position: absolute; top: 8px; right: 8px; font-size: 16px; opacity: 0; transition: opacity 0.2s; }
+.pet-option.selected .selected-check { opacity: 1; }
+
+.name-section { margin-bottom: 16px; }
+.input-label { font-size: 0.75rem; color: var(--muted); margin-bottom: 6px; }
+.name-input {
+  width: 100%; padding: 12px 16px;
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 12px; color: var(--text); font-size: 0.95rem;
+  font-family: 'M PLUS Rounded 1c', sans-serif;
+  outline: none; transition: border-color 0.2s;
+}
+.name-input:focus { border-color: var(--teal); }
+.name-input::placeholder { color: var(--muted); }
+
+.btn-primary {
+  width: 100%; padding: 15px;
+  background: linear-gradient(135deg, var(--blue), var(--teal));
+  border: none; border-radius: 14px;
+  font-family: 'M PLUS Rounded 1c', sans-serif;
+  font-size: 1rem; font-weight: 700; color: #0a0e1a;
+  cursor: pointer; transition: all 0.2s;
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(77,166,255,0.3); }
+.btn-primary:active { transform: scale(0.97); }
+
+/* ══════════════════════════════════
+   SCREEN 2: MAIN GAME
+══════════════════════════════════ */
+#screen-game { overflow: hidden; }
+
+/* Header */
+.game-header {
+  padding: 12px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
+.game-logo { font-family: 'Kaisei Decol', serif; font-size: 1.1rem; font-weight: 700; color: var(--teal); }
+.header-actions { display: flex; gap: 8px; }
+.icon-btn {
+  width: 34px; height: 34px; border-radius: 10px;
+  background: var(--panel); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 16px; transition: all 0.2s; position: relative;
+}
+.icon-btn:hover { border-color: var(--blue); }
+.badge-dot {
+  position: absolute; top: -3px; right: -3px;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--rose); border: 2px solid var(--bg);
+  animation: pulse 1.5s infinite;
+}
+@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.4)} }
+
+/* Tab bar */
+.tab-bar {
+  display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0;
+  background: var(--panel);
+}
+.tab-btn {
+  flex: 1; padding: 10px 4px 8px;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  cursor: pointer; font-size: 0.58rem; color: var(--muted);
+  border-bottom: 2px solid transparent; transition: all 0.2s;
+}
+.tab-btn .t-icon { font-size: 18px; }
+.tab-btn.active { color: var(--teal); border-bottom-color: var(--teal); }
+
+/* Tab content */
+.tab-content { flex: 1; overflow-y: auto; }
+.tab-pane { display: none; padding: 14px 14px; }
+.tab-pane.active { display: block; }
+
+/* ── Pet Tab ── */
+.pet-display {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 20px; padding: 16px;
+  margin-bottom: 12px; position: relative;
+}
+.pet-header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.pet-info-name { font-family: 'Kaisei Decol', serif; font-size: 1.2rem; font-weight: 700; }
+.pet-info-sub { font-size: 0.65rem; color: var(--muted); }
+.lv-badge {
+  background: linear-gradient(135deg, var(--blue), var(--teal));
+  color: #0a0e1a; font-weight: 900; font-size: 0.7rem;
+  padding: 4px 10px; border-radius: 99px;
+}
+.pet-center {
+  display: flex; align-items: center; justify-content: center;
+  position: relative; height: 140px;
+}
+.pet-glow {
+  position: absolute; width: 120px; height: 120px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(77,166,255,0.2) 0%, transparent 70%);
+  animation: glow-pulse 2.5s ease-in-out infinite;
+}
+@keyframes glow-pulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.2);opacity:0.6} }
+.main-pet-emoji {
+  font-size: 88px; position: relative; z-index: 2;
+  animation: float 3s ease-in-out infinite;
+  cursor: pointer; user-select: none;
+  filter: drop-shadow(0 4px 16px rgba(77,166,255,0.4));
+  transition: filter 0.15s;
+}
+.main-pet-emoji:active { transform: scale(0.88); filter: drop-shadow(0 4px 24px rgba(45,212,191,0.7)); }
+@keyframes float { 0%,100%{transform:translateY(0) rotate(-1deg)} 50%{transform:translateY(-10px) rotate(1deg)} }
+
+.mood-tag {
+  position: absolute; top: 8px; right: 8px;
+  background: rgba(0,0,0,0.35); backdrop-filter: blur(8px);
+  border: 1px solid var(--border); border-radius: 99px;
+  padding: 3px 10px; font-size: 0.65rem;
+}
+
+/* Stat bars */
+.stats-grid { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.stat-row { display: grid; grid-template-columns: 60px 1fr 36px; align-items: center; gap: 8px; }
+.stat-name { font-size: 0.68rem; color: var(--muted); display: flex; align-items: center; gap: 3px; }
+.bar-track { height: 8px; background: rgba(255,255,255,0.06); border-radius: 99px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 99px; transition: width 0.5s cubic-bezier(.34,1.56,.64,1); }
+.bar-fill.hunger { background: linear-gradient(90deg, var(--amber), #f97316); }
+.bar-fill.happy  { background: linear-gradient(90deg, var(--rose), #f472b6); }
+.bar-fill.energy { background: linear-gradient(90deg, var(--teal), #38bdf8); }
+.bar-fill.exp    { background: linear-gradient(90deg, var(--blue), var(--teal)); }
+.stat-pct { font-size: 0.65rem; color: var(--muted); text-align: right; }
+
+/* Action grid */
+.action-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-bottom: 12px; }
+.act-btn {
+  background: var(--panel2); border: 1px solid var(--border);
+  border-radius: 14px; padding: 10px 4px;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  cursor: pointer; transition: all 0.2s; font-size: 0.6rem; color: var(--muted);
+}
+.act-btn:hover { border-color: var(--blue); color: var(--text); transform: translateY(-2px); }
+.act-btn:active { transform: scale(0.93); }
+.act-btn .a-icon { font-size: 22px; }
+.act-btn.role-mine { border-color: rgba(45,212,191,0.4); background: rgba(45,212,191,0.06); color: var(--teal); }
+.act-btn.locked { opacity: 0.35; cursor: not-allowed; }
+.act-btn.locked:hover { transform: none; border-color: var(--border); color: var(--muted); }
+
+.role-hint {
+  background: rgba(45,212,191,0.08); border: 1px solid rgba(45,212,191,0.2);
+  border-radius: 10px; padding: 8px 12px;
+  font-size: 0.68rem; color: var(--teal);
+  display: flex; align-items: center; gap: 6px;
+}
+
+/* ── Members Tab ── */
+.member-list { display: flex; flex-direction: column; gap: 8px; }
+.member-row {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 14px; padding: 12px 14px;
+  display: flex; align-items: center; gap: 12px;
+  transition: border-color 0.2s;
+}
+.member-row.online { border-color: rgba(74,222,128,0.3); }
+.m-avatar { font-size: 32px; position: relative; }
+.m-online { position: absolute; bottom: 0; right: 0; width: 9px; height: 9px; border-radius: 50%; background: var(--green); border: 2px solid var(--bg); }
+.m-info { flex: 1; }
+.m-name { font-weight: 700; font-size: 0.85rem; }
+.m-role-badge {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 0.6rem; padding: 2px 8px; border-radius: 99px; margin-top: 3px;
+}
+.role-feed  { background: rgba(251,191,36,0.15); color: var(--amber); }
+.role-play  { background: rgba(251,113,133,0.15); color: var(--rose); }
+.role-sleep { background: rgba(77,166,255,0.15); color: var(--blue); }
+.role-clean { background: rgba(74,222,128,0.15); color: var(--green); }
+.role-photo { background: rgba(45,212,191,0.15); color: var(--teal); }
+.m-last { font-size: 0.6rem; color: var(--muted); margin-top: 2px; }
+.m-points {
+  display: flex; flex-direction: column; align-items: flex-end;
+}
+.m-score { font-family: 'Kaisei Decol', serif; font-size: 1.1rem; font-weight: 700; color: var(--amber); }
+.m-score-label { font-size: 0.55rem; color: var(--muted); }
+
+.role-change-btn {
+  font-size: 0.62rem; padding: 4px 10px; border-radius: 8px;
+  background: var(--panel2); border: 1px solid var(--border);
+  color: var(--muted); cursor: pointer; transition: all 0.2s; margin-top: 4px;
+}
+.role-change-btn:hover { border-color: var(--teal); color: var(--teal); }
+
+.invite-card {
+  background: var(--panel); border: 2px dashed rgba(77,166,255,0.25);
+  border-radius: 14px; padding: 14px;
+  display: flex; align-items: center; gap: 12px;
+  cursor: pointer; transition: all 0.2s; margin-top: 8px;
+}
+.invite-card:hover { border-color: var(--blue); }
+.invite-icon { font-size: 28px; }
+.invite-text { flex: 1; }
+.invite-title { font-weight: 700; font-size: 0.85rem; color: var(--blue); }
+.invite-sub { font-size: 0.65rem; color: var(--muted); margin-top: 2px; }
+
+/* ── Chat Tab ── */
+.chat-wrap { display: flex; flex-direction: column; height: 100%; }
+.chat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 14px 14px 0; }
+.chat-msg { display: flex; gap: 8px; align-items: flex-end; }
+.chat-msg.mine { flex-direction: row-reverse; }
+.chat-av { font-size: 22px; flex-shrink: 0; }
+.chat-bubble {
+  max-width: 72%; padding: 9px 13px;
+  border-radius: 16px 16px 16px 4px;
+  font-size: 0.8rem; line-height: 1.5;
+  background: var(--panel2); border: 1px solid var(--border);
+}
+.chat-msg.mine .chat-bubble {
+  background: linear-gradient(135deg, rgba(77,166,255,0.2), rgba(45,212,191,0.15));
+  border-color: rgba(45,212,191,0.25);
+  border-radius: 16px 16px 4px 16px;
+}
+.chat-meta { font-size: 0.58rem; color: var(--muted); margin-top: 3px; }
+.chat-msg.mine .chat-meta { text-align: right; }
+.chat-system {
+  text-align: center; font-size: 0.65rem; color: var(--muted);
+  background: rgba(255,255,255,0.03); border-radius: 99px;
+  padding: 4px 12px; align-self: center;
+}
+.chat-footer {
+  padding: 10px 14px 14px; border-top: 1px solid var(--border);
+  display: flex; gap: 8px; flex-shrink: 0;
+}
+.chat-input {
+  flex: 1; padding: 10px 14px;
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 12px; color: var(--text); font-size: 0.82rem;
+  font-family: 'M PLUS Rounded 1c', sans-serif;
+  outline: none; transition: border-color 0.2s;
+}
+.chat-input:focus { border-color: var(--teal); }
+.send-btn {
+  width: 40px; height: 40px; border-radius: 12px;
+  background: linear-gradient(135deg, var(--blue), var(--teal));
+  border: none; cursor: pointer; font-size: 18px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.send-btn:hover { transform: scale(1.08); }
+.send-btn:active { transform: scale(0.93); }
+
+/* ── Album Tab ── */
+.album-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.album-stats { display: flex; gap: 8px; }
+.album-stat {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 10px; padding: 6px 10px;
+  text-align: center;
+}
+.album-stat-num { font-family: 'Kaisei Decol', serif; font-size: 1.1rem; font-weight: 700; color: var(--teal); }
+.album-stat-label { font-size: 0.58rem; color: var(--muted); }
+.event-feed { display: flex; flex-direction: column; gap: 8px; }
+.event-item {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 14px; padding: 11px 13px;
+  display: flex; gap: 10px; cursor: pointer;
+  transition: all 0.2s;
+}
+.event-item:hover { border-color: rgba(77,166,255,0.3); transform: translateX(2px); }
+.ev-av { font-size: 24px; flex-shrink: 0; }
+.ev-body { flex: 1; }
+.ev-top { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
+.ev-user { font-size: 0.75rem; font-weight: 700; }
+.ev-badge { font-size: 0.58rem; padding: 2px 7px; border-radius: 99px; }
+.ev-text { font-size: 0.72rem; color: var(--muted); line-height: 1.5; }
+.ev-time { font-size: 0.6rem; color: var(--muted); opacity: 0.6; margin-top: 3px; }
+.ev-photo { width: 56px; height: 56px; border-radius: 10px; background: var(--panel2); display: flex; align-items: center; justify-content: center; font-size: 26px; flex-shrink: 0; }
+.likes-row { display: flex; align-items: center; gap: 4px; margin-top: 5px; }
+.like-btn { font-size: 0.65rem; color: var(--muted); cursor: pointer; transition: color 0.2s; padding: 2px 6px; border-radius: 6px; background: rgba(255,255,255,0.04); }
+.like-btn:hover, .like-btn.liked { color: var(--rose); }
+
+/* ── Notif overlay ── */
+.notif-panel {
+  position: fixed; top: 0; right: 0; left: 0; bottom: 0;
+  z-index: 100; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
+  display: none; align-items: flex-start; justify-content: center; padding-top: 60px;
+}
+.notif-panel.open { display: flex; }
+.notif-box {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 20px; width: calc(100% - 32px); max-width: 400px;
+  overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+}
+.notif-header { padding: 14px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+.notif-title { font-weight: 700; font-size: 0.9rem; }
+.notif-clear { font-size: 0.68rem; color: var(--teal); cursor: pointer; }
+.notif-list { max-height: 300px; overflow-y: auto; }
+.notif-item {
+  padding: 12px 16px; border-bottom: 1px solid var(--border);
+  display: flex; gap: 10px; align-items: center;
+}
+.notif-item:last-child { border-bottom: none; }
+.notif-icon { font-size: 22px; }
+.notif-body { flex: 1; }
+.notif-item-title { font-size: 0.77rem; font-weight: 700; }
+.notif-item-text { font-size: 0.68rem; color: var(--muted); margin-top: 2px; }
+.notif-time { font-size: 0.6rem; color: var(--muted); }
+.notif-unread { width: 8px; height: 8px; border-radius: 50%; background: var(--rose); flex-shrink: 0; }
+
+/* ── Toast ── */
+.toast {
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(8px);
+  background: var(--panel2); border: 1px solid rgba(45,212,191,0.4);
+  border-radius: 99px; padding: 10px 20px;
+  font-size: 0.78rem; font-weight: 700; color: var(--teal);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  opacity: 0; pointer-events: none; z-index: 200;
+  transition: all 0.3s cubic-bezier(.34,1.56,.64,1);
+  white-space: nowrap;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ── Role modal ── */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 150;
+  background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+  display: none; align-items: flex-end; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal-box {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 24px 24px 0 0; width: 100%; max-width: 430px;
+  padding: 20px 16px 30px;
+  animation: slide-up 0.3s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes slide-up { from{transform:translateY(100%)} to{transform:translateY(0)} }
+.modal-title { font-family: 'Kaisei Decol', serif; font-size: 1rem; font-weight: 700; margin-bottom: 14px; text-align: center; }
+.role-options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.role-opt {
+  padding: 12px; border-radius: 14px;
+  background: var(--panel2); border: 2px solid var(--border);
+  cursor: pointer; text-align: center; transition: all 0.2s;
+}
+.role-opt:hover { border-color: var(--teal); }
+.role-opt .r-icon { font-size: 26px; margin-bottom: 4px; }
+.role-opt .r-name { font-size: 0.75rem; font-weight: 700; }
+.role-opt .r-desc { font-size: 0.6rem; color: var(--muted); margin-top: 2px; }
+
+/* scroll */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ══ SCREEN 1: PET SELECTION ══ -->
+<div id="screen-select" class="screen active">
+  <div class="select-title">🐾 はじめてのペット</div>
+  <div class="select-sub">一緒に育てるペットを選ぼう</div>
+
+  <div class="pet-grid">
+    <div class="pet-option selected" data-pet="dragon" onclick="selectPet(this)">
+      <div class="selected-check">✅</div>
+      <div class="pet-emoji">🐉</div>
+      <div class="pet-name">ドラゴン</div>
+      <div class="pet-type">炎のいきもの</div>
+      <div class="pet-traits">
+        <span class="trait">たくましい</span>
+        <span class="trait">元気いっぱい</span>
+      </div>
+    </div>
+    <div class="pet-option" data-pet="unicorn" onclick="selectPet(this)">
+      <div class="selected-check">✅</div>
+      <div class="pet-emoji">🦄</div>
+      <div class="pet-name">ユニコーン</div>
+      <div class="pet-type">魔法のいきもの</div>
+      <div class="pet-traits">
+        <span class="trait">やさしい</span>
+        <span class="trait">癒し系</span>
+      </div>
+    </div>
+    <div class="pet-option" data-pet="fox" onclick="selectPet(this)">
+      <div class="selected-check">✅</div>
+      <div class="pet-emoji">🦊</div>
+      <div class="pet-name">フェンリル</div>
+      <div class="pet-type">伝説のきつね</div>
+      <div class="pet-traits">
+        <span class="trait">かしこい</span>
+        <span class="trait">あまえんぼ</span>
+      </div>
+    </div>
+    <div class="pet-option" data-pet="slime" onclick="selectPet(this)">
+      <div class="selected-check">✅</div>
+      <div class="pet-emoji">👾</div>
+      <div class="pet-name">スライムン</div>
+      <div class="pet-type">謎の生命体</div>
+      <div class="pet-traits">
+        <span class="trait">不思議</span>
+        <span class="trait">おもしろい</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="name-section">
+    <div class="input-label">ペットの名前をつけよう 💬</div>
+    <input class="name-input" id="petNameInput" type="text" maxlength="12" placeholder="例：ドラコ、ルナ…" value="ドラコ">
+  </div>
+
+  <button class="btn-primary" onclick="startGame()">🐾 みんなで育てはじめる！</button>
+</div>
+
+<!-- ══ SCREEN 2: MAIN GAME ══ -->
+<div id="screen-game" class="screen">
+  <div class="game-header">
+    <div class="game-logo">🐾 CooPet</div>
+    <div class="header-actions">
+      <div class="icon-btn" onclick="openNotif()">🔔<div class="badge-dot" id="notifDot"></div></div>
+      <div class="icon-btn" onclick="showToast('設定は準備中です ⚙️')">⚙️</div>
+    </div>
+  </div>
+
+  <div class="tab-bar">
+    <div class="tab-btn active" onclick="switchTab('pet',this)">
+      <div class="t-icon">🐾</div>ペット
+    </div>
+    <div class="tab-btn" onclick="switchTab('members',this)">
+      <div class="t-icon">👥</div>メンバー
+    </div>
+    <div class="tab-btn" onclick="switchTab('chat',this)">
+      <div class="t-icon">💬</div>チャット
+    </div>
+    <div class="tab-btn" onclick="switchTab('album',this)">
+      <div class="t-icon">📸</div>記録
+    </div>
+  </div>
+
+  <div class="tab-content">
+    <!-- PET TAB -->
+    <div class="tab-pane active" id="tab-pet">
+      <div class="pet-display">
+        <div class="pet-header-row">
+          <div>
+            <div class="pet-info-name" id="petDisplayName">ドラコ</div>
+            <div class="pet-info-sub" id="petDisplayType">🐉 炎のいきもの</div>
+          </div>
+          <div class="lv-badge" id="petLevel">Lv.1</div>
+        </div>
+        <div class="pet-center">
+          <div class="pet-glow" id="petGlow"></div>
+          <div class="main-pet-emoji" id="mainPetEmoji" onclick="touchPet()">🐉</div>
+          <div class="mood-tag" id="moodTag">😊 きげんよし</div>
+        </div>
+        <div class="stats-grid" style="margin-top:12px">
+          <div class="stat-row">
+            <div class="stat-name">🍖 おなか</div>
+            <div class="bar-track"><div class="bar-fill hunger" id="bar-hunger" style="width:70%"></div></div>
+            <div class="stat-pct" id="val-hunger">70%</div>
+          </div>
+          <div class="stat-row">
+            <div class="stat-name">💖 きもち</div>
+            <div class="bar-track"><div class="bar-fill happy" id="bar-happy" style="width:80%"></div></div>
+            <div class="stat-pct" id="val-happy">80%</div>
+          </div>
+          <div class="stat-row">
+            <div class="stat-name">⚡ げんき</div>
+            <div class="bar-track"><div class="bar-fill energy" id="bar-energy" style="width:60%"></div></div>
+            <div class="stat-pct" id="val-energy">60%</div>
+          </div>
+          <div class="stat-row">
+            <div class="stat-name">✨ 経験値</div>
+            <div class="bar-track"><div class="bar-fill exp" id="bar-exp" style="width:35%"></div></div>
+            <div class="stat-pct" id="val-exp">35%</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="action-grid">
+        <div class="act-btn role-mine" id="act-feed" onclick="doAction('feed')">
+          <div class="a-icon">🍖</div>
+          <div>ごはん</div>
+          <div style="font-size:0.5rem;color:var(--teal)">あなたの役割</div>
+        </div>
+        <div class="act-btn" id="act-play" onclick="doAction('play')">
+          <div class="a-icon">🎮</div>
+          <div>あそぶ</div>
+          <div style="font-size:0.5rem">みさきの役割</div>
+        </div>
+        <div class="act-btn" id="act-sleep" onclick="doAction('sleep')">
+          <div class="a-icon">🌙</div>
+          <div>ねかす</div>
+          <div style="font-size:0.5rem">たけしの役割</div>
+        </div>
+        <div class="act-btn" onclick="doAction('photo')">
+          <div class="a-icon">📸</div>
+          <div>写真</div>
+          <div style="font-size:0.5rem">みんな</div>
+        </div>
+      </div>
+
+      <div class="role-hint">
+        ⭐ あなたは <strong>ごはん係</strong> です。ごはんをあげると経験値が多くもらえる！
+      </div>
+    </div>
+
+    <!-- MEMBERS TAB -->
+    <div class="tab-pane" id="tab-members">
+      <div class="member-list">
+        <div class="member-row online">
+          <div class="m-avatar">🐱<div class="m-online"></div></div>
+          <div class="m-info">
+            <div class="m-name">あなた</div>
+            <div class="m-role-badge role-feed">🍖 ごはん係</div>
+            <div class="m-last">オンライン中</div>
+            <div class="role-change-btn" onclick="openRoleModal()">役割を変える</div>
+          </div>
+          <div class="m-points">
+            <div class="m-score" id="myScore">185</div>
+            <div class="m-score-label">pts</div>
+          </div>
+        </div>
+
+        <div class="member-row online">
+          <div class="m-avatar">🦊<div class="m-online"></div></div>
+          <div class="m-info">
+            <div class="m-name">みさき</div>
+            <div class="m-role-badge role-play">🎮 あそび係</div>
+            <div class="m-last">さっきあそばせた</div>
+          </div>
+          <div class="m-points">
+            <div class="m-score">230</div>
+            <div class="m-score-label">pts</div>
+          </div>
+        </div>
+
+        <div class="member-row">
+          <div class="m-avatar">🐻</div>
+          <div class="m-info">
+            <div class="m-name">たけし</div>
+            <div class="m-role-badge role-sleep">🌙 ねかし係</div>
+            <div class="m-last">20分前</div>
+          </div>
+          <div class="m-points">
+            <div class="m-score">140</div>
+            <div class="m-score-label">pts</div>
+          </div>
+        </div>
+
+        <div class="member-row">
+          <div class="m-avatar">🐼</div>
+          <div class="m-info">
+            <div class="m-name">ゆい</div>
+            <div class="m-role-badge role-clean">🧹 おそうじ係</div>
+            <div class="m-last">2時間前</div>
+          </div>
+          <div class="m-points">
+            <div class="m-score">98</div>
+            <div class="m-score-label">pts</div>
+          </div>
+        </div>
+
+        <div class="invite-card" onclick="showToast('招待リンクをコピーしました！🔗')">
+          <div class="invite-icon">➕</div>
+          <div class="invite-text">
+            <div class="invite-title">メンバーを招待する</div>
+            <div class="invite-sub">リンクをシェアして友達を呼ぼう</div>
+          </div>
+          <div>→</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHAT TAB -->
+    <div class="tab-pane" id="tab-chat" style="padding:0;display:flex;flex-direction:column;height:100%;">
+      <div class="chat-messages" id="chatMessages">
+        <div class="chat-system">今日 13:00 — みんながオンラインになりました</div>
+        <div class="chat-msg">
+          <div class="chat-av">🦊</div>
+          <div>
+            <div class="chat-bubble">ドラコ、ごはんあげた？おなかすいてそう！</div>
+            <div class="chat-meta">みさき · 13:10</div>
+          </div>
+        </div>
+        <div class="chat-msg">
+          <div class="chat-av">🐻</div>
+          <div>
+            <div class="chat-bubble">さっき昼寝させておいたよ😴 げんき回復したはず</div>
+            <div class="chat-meta">たけし · 13:12</div>
+          </div>
+        </div>
+        <div class="chat-msg mine">
+          <div class="chat-av">🐱</div>
+          <div>
+            <div class="chat-bubble">今日のドラコめっちゃかわいかった！写真撮ったよ📸</div>
+            <div class="chat-meta">あなた · 13:14</div>
+          </div>
+        </div>
+        <div class="chat-msg">
+          <div class="chat-av">🐼</div>
+          <div>
+            <div class="chat-bubble">夜ごはんは私がやります！18時ごろね🍖</div>
+            <div class="chat-meta">ゆい · 13:16</div>
+          </div>
+        </div>
+        <div class="chat-system">🐉 ドラコがレベルアップしました！ Lv.2 → Lv.3</div>
+        <div class="chat-msg">
+          <div class="chat-av">🦊</div>
+          <div>
+            <div class="chat-bubble">やったー！🎉 みんなで育てた甲斐があったね！</div>
+            <div class="chat-meta">みさき · 13:20</div>
+          </div>
+        </div>
+      </div>
+      <div class="chat-footer">
+        <input class="chat-input" id="chatInput" type="text" placeholder="メッセージを送る…" onkeydown="if(event.key==='Enter')sendChat()">
+        <button class="send-btn" onclick="sendChat()">➤</button>
+      </div>
+    </div>
+
+    <!-- ALBUM TAB -->
+    <div class="tab-pane" id="tab-album">
+      <div class="album-header">
+        <div style="font-family:'Kaisei Decol',serif;font-size:1rem;font-weight:700;">📖 みんなの記録</div>
+        <div class="album-stats">
+          <div class="album-stat">
+            <div class="album-stat-num" id="eventCount">5</div>
+            <div class="album-stat-label">出来事</div>
+          </div>
+          <div class="album-stat">
+            <div class="album-stat-num">2</div>
+            <div class="album-stat-label">写真</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-feed" id="eventFeed">
+        <div class="event-item">
+          <div class="ev-av">🐱</div>
+          <div class="ev-body">
+            <div class="ev-top">
+              <span class="ev-user">あなた</span>
+              <span class="ev-badge role-feed">🍖 ごはん</span>
+            </div>
+            <div class="ev-text">ドラコに竜の実を食べさせた！モリモリ食べてくれた🎉</div>
+            <div class="likes-row">
+              <div class="like-btn" onclick="toggleLike(this)">❤️ 2</div>
+            </div>
+            <div class="ev-time">さっき</div>
+          </div>
+        </div>
+        <div class="event-item">
+          <div class="ev-av">🦊</div>
+          <div class="ev-body">
+            <div class="ev-top">
+              <span class="ev-user">みさき</span>
+              <span class="ev-badge role-photo">📸 写真</span>
+            </div>
+            <div class="ev-text">今日のドラコ、めっちゃかわいかった🥰</div>
+            <div class="likes-row">
+              <div class="like-btn liked" onclick="toggleLike(this)">❤️ 3</div>
+            </div>
+            <div class="ev-time">30分前</div>
+          </div>
+          <div class="ev-photo">🐉</div>
+        </div>
+        <div class="event-item">
+          <div class="ev-av">🐻</div>
+          <div class="ev-body">
+            <div class="ev-top">
+              <span class="ev-user">たけし</span>
+              <span class="ev-badge role-sleep">🌙 ねかす</span>
+            </div>
+            <div class="ev-text">昼寝させました。すやすや眠っています💤</div>
+            <div class="likes-row">
+              <div class="like-btn" onclick="toggleLike(this)">❤️ 1</div>
+            </div>
+            <div class="ev-time">1時間前</div>
+          </div>
+        </div>
+        <div class="event-item" style="border-color:rgba(251,191,36,0.3)">
+          <div class="ev-av">⭐</div>
+          <div class="ev-body">
+            <div class="ev-top">
+              <span class="ev-user" style="color:var(--amber)">システム</span>
+              <span class="ev-badge" style="background:rgba(251,191,36,0.15);color:var(--amber)">🏆 レベルアップ</span>
+            </div>
+            <div class="ev-text">ドラコが Lv.1 になりました！みんなの努力の結果！</div>
+            <div class="ev-time">昨日</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ NOTIF PANEL ══ -->
+<div class="notif-panel" id="notifPanel" onclick="if(event.target===this)closeNotif()">
+  <div class="notif-box">
+    <div class="notif-header">
+      <div class="notif-title">🔔 通知</div>
+      <div class="notif-clear" onclick="clearNotifs()">すべて既読にする</div>
+    </div>
+    <div class="notif-list" id="notifList">
+      <div class="notif-item">
+        <div class="notif-icon">🍖</div>
+        <div class="notif-body">
+          <div class="notif-item-title">ごはんの時間です！</div>
+          <div class="notif-item-text">ドラコのおなかが減っています</div>
+          <div class="notif-time">5分前</div>
+        </div>
+        <div class="notif-unread"></div>
+      </div>
+      <div class="notif-item">
+        <div class="notif-icon">🎮</div>
+        <div class="notif-body">
+          <div class="notif-item-title">みさきがあそばせました</div>
+          <div class="notif-item-text">きもちが +15 上がりました ✨</div>
+          <div class="notif-time">30分前</div>
+        </div>
+        <div class="notif-unread"></div>
+      </div>
+      <div class="notif-item">
+        <div class="notif-icon">💬</div>
+        <div class="notif-body">
+          <div class="notif-item-title">ゆいがメッセージを送りました</div>
+          <div class="notif-item-text">「夜ごはんは私がやります！」</div>
+          <div class="notif-time">1時間前</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ROLE MODAL ══ -->
+<div class="modal-overlay" id="roleModal" onclick="if(event.target===this)closeRoleModal()">
+  <div class="modal-box">
+    <div class="modal-title">役割を選んでください</div>
+    <div class="role-options">
+      <div class="role-opt" onclick="changeRole('feed','🍖 ごはん係')">
+        <div class="r-icon">🍖</div>
+        <div class="r-name">ごはん係</div>
+        <div class="r-desc">食事担当。毎食+20pt</div>
+      </div>
+      <div class="role-opt" onclick="changeRole('play','🎮 あそび係')">
+        <div class="r-icon">🎮</div>
+        <div class="r-name">あそび係</div>
+        <div class="r-desc">遊び担当。きもち+多め</div>
+      </div>
+      <div class="role-opt" onclick="changeRole('sleep','🌙 ねかし係')">
+        <div class="r-icon">🌙</div>
+        <div class="r-name">ねかし係</div>
+        <div class="r-desc">睡眠管理。げんき+多め</div>
+      </div>
+      <div class="role-opt" onclick="changeRole('clean','🧹 おそうじ係')">
+        <div class="r-icon">🧹</div>
+        <div class="r-name">おそうじ係</div>
+        <div class="r-desc">衛生管理。経験値2倍</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TOAST ══ -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Game state ──
+const PETS = {
+  dragon:  { emoji:'🐉', type:'炎のいきもの', glow:'rgba(251,113,133,0.25)' },
+  unicorn: { emoji:'🦄', type:'魔法のいきもの', glow:'rgba(192,132,252,0.25)' },
+  fox:     { emoji:'🦊', type:'伝説のきつね', glow:'rgba(251,191,36,0.25)' },
+  slime:   { emoji:'👾', type:'謎の生命体', glow:'rgba(74,222,128,0.25)' }
+};
+
+let selectedPet = 'dragon';
+let state = {
+  hunger: 70, happy: 80, energy: 60, exp: 35, level: 1,
+  myScore: 185, eventCount: 5
+};
+let notifCount = 2;
+
+// ── Screen 1: Pet selection ──
+function selectPet(el) {
+  document.querySelectorAll('.pet-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedPet = el.dataset.pet;
+}
+
+function startGame() {
+  const name = document.getElementById('petNameInput').value.trim() || 'ペット';
+  const pet = PETS[selectedPet];
+  document.getElementById('petDisplayName').textContent = name;
+  document.getElementById('petDisplayType').textContent = pet.emoji + ' ' + pet.type;
+  document.getElementById('mainPetEmoji').textContent = pet.emoji;
+  document.getElementById('petGlow').style.background =
+    `radial-gradient(circle, ${pet.glow} 0%, transparent 70%)`;
+  document.getElementById('screen-select').classList.remove('active');
+  document.getElementById('screen-game').classList.add('active');
+  updateUI();
+}
+
+// ── Tab switching ──
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  const pane = document.getElementById('tab-' + id);
+  pane.classList.add('active');
+  if (id === 'chat') {
+    setTimeout(() => {
+      const msgs = document.getElementById('chatMessages');
+      msgs.scrollTop = msgs.scrollHeight;
+    }, 50);
+  }
+}
+
+// ── Pet actions ──
+const ACTIONS = {
+  feed:  { h:+18, hp:+5,  e:-3, xp:+12, pts:+20, msg:'🍖 ドラコがモリモリ食べた！おなか回復！', role:true },
+  play:  { h:-8,  hp:+18, e:-12,xp:+10, pts:+15, msg:'🎮 いっしょに遊んだ！きもちアップ！', role:false },
+  sleep: { h:-4,  hp:+6,  e:+22,xp:+8,  pts:+10, msg:'🌙 すやすや眠りについた…げんき回復', role:false },
+  photo: { h:0,   hp:+4,  e:0,  xp:+5,  pts:+8,  msg:'📸 かわいい瞬間をパシャリ！', role:false }
+};
+
+function doAction(type) {
+  const a = ACTIONS[type];
+  state.hunger = clamp(state.hunger + a.h);
+  state.happy  = clamp(state.happy  + a.hp);
+  state.energy = clamp(state.energy + a.e);
+  state.exp    = state.exp + a.xp;
+  state.myScore += a.role ? a.pts * 1.5 : a.pts;
+
+  let extraMsg = a.msg;
+  if (a.role) extraMsg += ' ⭐役割ボーナス！';
+
+  if (state.exp >= 100) {
+    state.exp -= 100;
+    state.level++;
+    extraMsg = '🎉 レベルアップ！ Lv.' + state.level + ' になった！';
+    addEvent('⭐', 'システム', `ドラコが Lv.${state.level} になりました！`, 'style="background:rgba(251,191,36,0.15);color:var(--amber)"', '今');
+    addNotif('⭐', 'レベルアップ！', `ドラコが Lv.${state.level} になりました`);
+  } else {
+    addAlbumEvent(type, extraMsg);
+  }
+
+  updateUI();
+  showToast(extraMsg);
+  updateMood();
+}
+
+function touchPet() {
+  state.happy = clamp(state.happy + 4);
+  state.myScore += 3;
+  updateUI();
+  showToast('🐾 なでてあげた！きもち+4');
+}
+
+function clamp(v) { return Math.min(100, Math.max(0, v)); }
+
+function updateUI() {
+  setBar('hunger', state.hunger);
+  setBar('happy',  state.happy);
+  setBar('energy', state.energy);
+  setBar('exp',    Math.min(state.exp, 100));
+  document.getElementById('petLevel').textContent = 'Lv.' + state.level;
+  document.getElementById('myScore').textContent = Math.round(state.myScore);
+}
+
+function setBar(id, val) {
+  document.getElementById('bar-'+id).style.width = val + '%';
+  document.getElementById('val-'+id).textContent = Math.round(val) + '%';
+}
+
+function updateMood() {
+  const avg = (state.hunger + state.happy + state.energy) / 3;
+  const tag = document.getElementById('moodTag');
+  if (avg > 75) tag.textContent = '😄 めちゃごきげん';
+  else if (avg > 50) tag.textContent = '😊 きげんよし';
+  else if (avg > 30) tag.textContent = '😐 ちょっと元気ない…';
+  else tag.textContent = '😢 お世話して！';
+}
+
+// ── Album ──
+const badges = {
+  feed:  {cls:'role-feed',  label:'🍖 ごはん'},
+  play:  {cls:'role-play',  label:'🎮 あそぶ'},
+  sleep: {cls:'role-sleep', label:'🌙 ねかす'},
+  photo: {cls:'role-photo', label:'📸 写真'}
+};
+
+function addAlbumEvent(type, text) {
+  state.eventCount++;
+  document.getElementById('eventCount').textContent = state.eventCount;
+  const b = badges[type];
+  const div = document.createElement('div');
+  div.className = 'event-item';
+  div.innerHTML = `
+    <div class="ev-av">🐱</div>
+    <div class="ev-body">
+      <div class="ev-top">
+        <span class="ev-user">あなた</span>
+        <span class="ev-badge ${b.cls}">${b.label}</span>
+      </div>
+      <div class="ev-text">${text}</div>
+      <div class="likes-row"><div class="like-btn" onclick="toggleLike(this)">❤️ 0</div></div>
+      <div class="ev-time">たった今</div>
+    </div>`;
+  const feed = document.getElementById('eventFeed');
+  feed.insertBefore(div, feed.firstChild);
+}
+
+function addEvent(av, user, text, badgeStyle, time) {
+  const div = document.createElement('div');
+  div.className = 'event-item';
+  div.style.borderColor = 'rgba(251,191,36,0.3)';
+  div.innerHTML = `
+    <div class="ev-av">${av}</div>
+    <div class="ev-body">
+      <div class="ev-top">
+        <span class="ev-user" style="color:var(--amber)">${user}</span>
+        <span class="ev-badge" ${badgeStyle}>🏆 レベルアップ</span>
+      </div>
+      <div class="ev-text">${text}</div>
+      <div class="ev-time">${time}</div>
+    </div>`;
+  const feed = document.getElementById('eventFeed');
+  feed.insertBefore(div, feed.firstChild);
+}
+
+function toggleLike(btn) {
+  const liked = btn.classList.toggle('liked');
+  const parts = btn.textContent.split(' ');
+  let n = parseInt(parts[1]) || 0;
+  btn.textContent = '❤️ ' + (liked ? n+1 : Math.max(0,n-1));
+}
+
+// ── Chat ──
+function sendChat() {
+  const input = document.getElementById('chatInput');
+  const txt = input.value.trim();
+  if (!txt) return;
+  input.value = '';
+  const msgs = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'chat-msg mine';
+  div.innerHTML = `<div class="chat-av">🐱</div><div>
+    <div class="chat-bubble">${escapeHtml(txt)}</div>
+    <div class="chat-meta">あなた · 今</div></div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  addNotif('💬', 'チャット送信', txt.length > 20 ? txt.slice(0,20)+'…' : txt);
+  setTimeout(() => autoReply(msgs, txt), 1200);
+}
+
+const autoReplies = ['かわいいね🥰','わかった！任せて✨','ドラコ元気そう？','今夜は私が担当します！','ありがとう😊','すごい！レベルアップしそう！'];
+function autoReply(msgs, _) {
+  const names = [['🦊','みさき'],['🐻','たけし'],['🐼','ゆい']];
+  const [av, name] = names[Math.floor(Math.random()*names.length)];
+  const reply = autoReplies[Math.floor(Math.random()*autoReplies.length)];
+  const div = document.createElement('div');
+  div.className = 'chat-msg';
+  div.innerHTML = `<div class="chat-av">${av}</div><div>
+    <div class="chat-bubble">${reply}</div>
+    <div class="chat-meta">${name} · 今</div></div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── Notif ──
+function openNotif() { document.getElementById('notifPanel').classList.add('open'); }
+function closeNotif() { document.getElementById('notifPanel').classList.remove('open'); }
+function clearNotifs() {
+  document.querySelectorAll('.notif-unread').forEach(d => d.remove());
+  document.getElementById('notifDot').style.display = 'none';
+  showToast('すべて既読にしました ✓');
+}
+
+function addNotif(icon, title, text) {
+  const list = document.getElementById('notifList');
+  const div = document.createElement('div');
+  div.className = 'notif-item';
+  div.innerHTML = `<div class="notif-icon">${icon}</div>
+    <div class="notif-body">
+      <div class="notif-item-title">${title}</div>
+      <div class="notif-item-text">${escapeHtml(text)}</div>
+      <div class="notif-time">たった今</div>
+    </div><div class="notif-unread"></div>`;
+  list.insertBefore(div, list.firstChild);
+  document.getElementById('notifDot').style.display = '';
+}
+
+// ── Role modal ──
+function openRoleModal() { document.getElementById('roleModal').classList.add('open'); }
+function closeRoleModal() { document.getElementById('roleModal').classList.remove('open'); }
+function changeRole(type, label) {
+  closeRoleModal();
+  document.querySelector('.m-role-badge').textContent = label;
+  const classes = ['role-feed','role-play','role-sleep','role-clean','role-photo'];
+  const badge = document.querySelector('.m-role-badge');
+  badge.className = 'm-role-badge role-' + type;
+  badge.textContent = label;
+  const hint = document.querySelector('.role-hint');
+  const roleNames = {feed:'ごはん係',play:'あそび係',sleep:'ねかし係',clean:'おそうじ係'};
+  hint.innerHTML = `⭐ あなたは <strong>${roleNames[type]}</strong> に変更しました！`;
+  showToast('役割を「' + label + '」に変えました！');
+}
+
+// ── Toast ──
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+// ── Passive decay ──
+setInterval(() => {
+  if (!document.getElementById('screen-game').classList.contains('active')) return;
+  state.hunger = clamp(state.hunger - 1.5);
+  state.happy  = clamp(state.happy  - 0.8);
+  if (state.hunger < 30 && Math.random() < 0.3) {
+    addNotif('🍖', 'おなかがすいています！', 'ドラコにごはんをあげてください');
+  }
+  updateUI();
+  updateMood();
+}, 20000);
+</script>
+</body>
+</html>

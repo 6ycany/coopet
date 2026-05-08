@@ -1,0 +1,60 @@
+name: Deploy PWA to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Patch manifest & assetlinks for GitHub Pages
+        run: |
+          OWNER="${{ github.repository_owner }}"
+          REPO="${{ github.event.repository.name }}"
+          SITE_URL="https://${OWNER}.github.io/${REPO}"
+
+          # コピーして元ファイルを変更しない
+          cp -r coopet-pwa deploy-dist
+
+          # manifest.json — start_url / scope をサブパスに更新
+          sed -i "s|\"start_url\": \"/?source=pwa\"|\"start_url\": \"/${REPO}/?source=pwa\"|" deploy-dist/manifest.json
+          sed -i "s|\"scope\": \"/\"|\"scope\": \"/${REPO}/\"|"                               deploy-dist/manifest.json
+
+          # assetlinks.json — SHA256 フィンガープリントを埋め込む（シークレットがあれば）
+          if [ -n "${{ secrets.RELEASE_FINGERPRINT }}" ]; then
+            sed -i \
+              "s|REPLACE_WITH_YOUR_SHA256_FINGERPRINT|${{ secrets.RELEASE_FINGERPRINT }}|g" \
+              deploy-dist/.well-known/assetlinks.json
+          fi
+
+          echo "Site URL: ${SITE_URL}"
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: deploy-dist
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

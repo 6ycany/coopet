@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">CooPet</string>
+    <!-- CI ビルド時に GitHub Pages の URL に自動置換される -->
+    <string name="twa_url">SITE_URL_PLACEHOLDER</string>
+    <string name="twa_host">SITE_HOST_PLACEHOLDER</string>
+</resources>

@@ -1,0 +1,36 @@
+{
+  "packageId": "com.coopet.app",
+  "host": "REPLACE_WITH_YOUR_NETLIFY_URL",
+  "name": "CooPet",
+  "launcherName": "CooPet",
+  "display": "standalone",
+  "orientation": "any",
+  "themeColor": "#2dd4bf",
+  "navigationColor": "#07091a",
+  "navigationColorDark": "#07091a",
+  "navigationDividerColor": "#2dd4bf",
+  "backgroundColor": "#07091a",
+  "enableNotifications": false,
+  "startUrl": "/?source=twa",
+  "iconUrl": "https://REPLACE_WITH_YOUR_NETLIFY_URL/icons/icon-512x512.png",
+  "maskableIconUrl": "https://REPLACE_WITH_YOUR_NETLIFY_URL/icons/icon-512x512.png",
+  "monochromeIconUrl": "https://REPLACE_WITH_YOUR_NETLIFY_URL/icons/icon-512x512.png",
+  "appVersion": "1.0.0",
+  "appVersionCode": 1,
+  "signingKey": {
+    "path": "./android.keystore",
+    "alias": "coopet"
+  },
+  "splashScreenFadeOutDuration": 300,
+  "enableSiteSettingsShortcut": false,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://REPLACE_WITH_YOUR_NETLIFY_URL/",
+  "minSdkVersion": 21,
+  "fingerprints": [
+    {
+      "name": "production",
+      "value": "REPLACE_WITH_YOUR_SHA256_FINGERPRINT"
+    }
+  ]
+}

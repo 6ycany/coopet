@@ -1062,8 +1062,24 @@ function applyTheme(){
 }
 
 // ══ ROOM EDIT OVERLAY ══
-function openRoomEdit(){document.getElementById('roomEditOverlay').classList.add('open');}
-function closeRoomEdit(){document.getElementById('roomEditOverlay').classList.remove('open');}
+function openRoomEdit(){
+  document.getElementById('roomEditOverlay').classList.add('open');
+  // 家具タブを開いた場合は自動で編集モード ON
+  G.furnEditMode=true;
+  document.getElementById('furnEditBtn').classList.add('on');
+  document.getElementById('furnEditBanner').classList.add('show');
+  placedFurniture.forEach(f=>{f.el.classList.remove('locked');});
+}
+function closeRoomEdit(){
+  document.getElementById('roomEditOverlay').classList.remove('open');
+  // 模様替えモードも同時に解除
+  if(G.furnEditMode){
+    G.furnEditMode=false;
+    document.getElementById('furnEditBtn').classList.remove('on');
+    document.getElementById('furnEditBanner').classList.remove('show');
+    placedFurniture.forEach(f=>{f.el.classList.add('locked');});
+  }
+}
 function reTab(id,btn){document.querySelectorAll('.re-tab').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.re-pane').forEach(p=>p.classList.remove('active'));btn.classList.add('active');document.getElementById('re-'+id).classList.add('active');}
 
 // ══════════════════════════════════════════════════════════
@@ -1153,6 +1169,14 @@ function toggleFurnEdit(){
   document.getElementById('furnEditBtn').classList.toggle('on',G.furnEditMode);
   document.getElementById('furnEditBanner').classList.toggle('show',G.furnEditMode);
   placedFurniture.forEach(f=>{f.el.classList.toggle('locked',!G.furnEditMode);});
+  if(G.furnEditMode){
+    // 家具タブを選択した状態でパネルを開く
+    openRoomEdit();
+    const furnTab=document.querySelector('.re-tab:nth-child(2)');
+    if(furnTab) reTab('furn',furnTab);
+  } else {
+    closeRoomEdit();
+  }
   showToast(G.furnEditMode?'✏️ 模様替えモード ON':'🔒 模様替えモード OFF');
 }
 function makeFurnitureDraggable(el){
